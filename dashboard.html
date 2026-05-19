@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Academic Literature Analysis System</title>
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7f4;--surf:#fff;--surf2:#f1efe8;
+  --bd:#e2e0d8;--bd2:#c8c6be;
+  --tx:#1a1a18;--tx2:#5f5e5a;--tx3:#888780;
+  --gn:#0f6e56;--gn-bg:#e1f5ee;--gn-bd:#9fe1cb;
+  --bl:#185fa5;--bl-bg:#e6f1fb;--bl-bd:#85b7eb;
+  --am:#854f0b;--am-bg:#faeeda;--am-bd:#fac775;
+  --gy:#444441;--gy-bg:#f1efe8;--gy-bd:#d3d1c7;
+  --pu:#3c3489;--pu-bg:#eeedfe;--pu-bd:#afa9ec;
+  --rd:#a32d2d;--rd-bg:#fcebeb;--rd-bd:#f09595;
+  --or:#7a3500;--or-bg:#fff3e8;--or-bd:#ffc285;
+  --r:8px;--rl:12px;--mono:'Courier New',monospace
+}
+body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.6;min-height:100%;margin:0}
+.app{display:grid;grid-template-columns:268px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:hidden}
+.topbar{grid-column:1/-1;background:var(--surf);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:12px}
+.sidebar{background:var(--surf);border-right:1px solid var(--bd);overflow-y:auto;position:sticky;top:56px;height:calc(100vh - 56px)}
+.main{padding:24px;overflow-y:auto;height:calc(100vh - 56px)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:30px;height:30px;background:var(--pu-bg);border:1px solid var(--pu-bd);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--pu)}
+.logo-text{font-size:14px;font-weight:600}
+.logo-sub{font-size:11px;color:var(--tx3)}
+.prog{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{background:var(--surf2);border:1px solid var(--bd);border-radius:20px;padding:4px 10px;font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:5px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rbtn{background:transparent;border:1px solid var(--bd2);border-radius:var(--r);padding:5px 12px;font-size:12px;color:var(--tx2);cursor:pointer}
+.rbtn:hover{background:var(--surf2)}
+.ns{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);padding:10px 16px 4px}
+.ni{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;border-left:3px solid transparent}
+.ni:hover{background:var(--surf2)}
+.ni.act{background:var(--bl-bg);border-left-color:var(--bl)}
+.ni.act .nl{color:var(--bl);font-weight:500}
+.nb{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.ni-info{flex:1;min-width:0}
+.nl{font-size:12px;font-weight:500;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nsub{font-size:10px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nst{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pip{display:flex;align-items:center;padding:12px 16px;border-top:1px solid var(--bd);margin-top:6px;flex-wrap:wrap;gap:3px}
+.pd{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--bd2);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;color:var(--tx3);cursor:pointer;flex-shrink:0}
+.pd-done{background:var(--gn-bg);border-color:var(--gn);color:var(--gn)}
+.pd-active{background:var(--bl-bg);border-color:var(--bl);color:var(--bl)}
+.pa{font-size:8px;color:var(--bd2);padding:0 1px}
+.hero{background:var(--pu-bg);border:1px solid var(--pu-bd);border-radius:var(--rl);padding:20px;margin-bottom:16px;text-align:center}
+.hero h2{font-size:18px;font-weight:700;color:var(--pu);margin-bottom:4px}
+.hero p{font-size:12px;color:var(--pu);opacity:.8;margin-bottom:14px}
+.hsg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hsc{background:var(--surf);border:1px solid var(--pu-bd);border-radius:var(--r);padding:10px}
+.hsc .val{font-size:20px;font-weight:700;color:var(--pu)}
+.hsc .lbl{font-size:11px;color:var(--pu);opacity:.7}
+.opener-card{background:var(--or-bg);border:1.5px solid var(--or-bd);border-radius:var(--rl);padding:16px;margin-bottom:16px}
+.oc-badge{display:inline-flex;align-items:center;gap:6px;background:var(--or-bg);border:1px solid var(--or-bd);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--or);margin-bottom:6px}
+.oc-title{font-size:14px;font-weight:600;color:var(--or)}
+.oc-sub{font-size:12px;color:var(--or);opacity:.8;margin-top:2px;margin-bottom:12px}
+.code-display{display:flex;align-items:center;gap:10px;background:var(--surf);border:1.5px solid var(--or-bd);border-radius:var(--r);padding:10px 14px;margin-bottom:12px}
+.code-lbl{font-size:11px;color:var(--tx3);flex-shrink:0}
+.code-val{font-size:26px;font-weight:700;letter-spacing:6px;color:var(--or);font-family:var(--mono);flex:1;text-align:center}
+.code-regen{background:transparent;border:1px solid var(--or-bd);border-radius:var(--r);padding:5px 10px;font-size:11px;color:var(--or);cursor:pointer;flex-shrink:0}
+.code-regen:hover{background:var(--am-bg)}
+.oc-desc{font-size:12px;color:var(--tx2);line-height:1.6;margin-bottom:12px;padding:10px;background:rgba(255,255,255,.6);border-radius:var(--r);border-left:3px solid var(--or-bd)}
+.oc-actions{display:flex;gap:8px;flex-wrap:wrap}
+.oc-copy{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:7px 14px;border-radius:var(--r);border:1.5px solid var(--or-bd);background:var(--surf);color:var(--or);cursor:pointer}
+.oc-copy:hover{background:var(--am-bg)}
+.oc-copy.ok{border-color:var(--gn);color:var(--gn);background:var(--gn-bg)}
+.oc-preview{font-size:11px;color:var(--tx3);padding:7px 12px;border-radius:var(--r);border:1px solid var(--bd);background:var(--surf2);cursor:pointer}
+.oc-preview:hover{background:var(--surf)}
+.how{background:var(--surf);border:1px solid var(--bd);border-radius:var(--rl);padding:14px;margin-bottom:16px}
+.how h3{font-size:13px;font-weight:600;margin-bottom:10px}
+.step{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--bd)}
+.step:last-child{border-bottom:none}
+.sn{width:20px;height:20px;border-radius:50%;background:var(--pu-bg);border:1px solid var(--pu-bd);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--pu);flex-shrink:0;margin-top:1px}
+.sn.orange{background:var(--or-bg);border-color:var(--or-bd);color:var(--or)}
+.st{font-size:12px;color:var(--tx2);line-height:1.5}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.mc{background:var(--surf);border:1px solid var(--bd);border-radius:var(--rl);padding:12px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.mc:hover{border-color:var(--bd2);background:var(--surf2)}
+.mi{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.mn{font-size:12px;font-weight:500;margin-bottom:2px}
+.md{font-size:11px;color:var(--tx3);line-height:1.4}
+.ms{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:4px;border:1px solid}
+.mhdr{margin-bottom:16px}
+.mtr{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.mico{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:1px solid}
+.mname{font-size:18px;font-weight:600;line-height:1.3}
+.mdesc{font-size:13px;color:var(--tx2);margin-top:3px}
+.mmeta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--bd)}
+.sbar{background:var(--surf2);border:1px solid var(--bd);border-radius:var(--rl);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.slbl{font-size:12px;font-weight:500;color:var(--tx2)}
+.tbg{display:flex;gap:6px}
+.tog{font-size:11px;font-weight:500;padding:5px 12px;border-radius:20px;border:1px solid var(--bd2);cursor:pointer;background:var(--surf);color:var(--tx2)}
+.tog:hover{background:var(--surf2)}
+.tog.s-done{background:var(--gn-bg);border-color:var(--gn);color:var(--gn)}
+.tog.s-active{background:var(--bl-bg);border-color:var(--bl);color:var(--bl)}
+.tog.s-todo{background:var(--gy-bg);border-color:var(--gy-bd);color:var(--gy)}
+.pr{background:var(--am-bg);border:1px solid var(--am-bd);border-radius:var(--r);padding:8px 12px;font-size:12px;color:var(--am);margin-bottom:12px}
+.ic2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.ic{background:var(--surf);border:1px solid var(--bd);border-radius:var(--rl);padding:12px}
+.icl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:6px}
+.ici{font-size:12px;color:var(--tx2);display:flex;gap:6px;align-items:flex-start;padding:2px 0}
+.ici::before{content:"--";color:var(--tx3);flex-shrink:0}
+.ict{font-size:12px;color:var(--tx2);line-height:1.6}
+.kw-block{background:var(--bl-bg);border:1.5px solid var(--bl-bd);border-radius:var(--rl);padding:16px;margin-bottom:14px}
+.kw-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--bl);margin-bottom:6px}
+.kw-desc{font-size:12px;color:var(--bl);opacity:.9;margin-bottom:10px;line-height:1.5}
+.kw-row{display:flex;gap:8px;align-items:flex-start}
+.kw-input{flex:1;border:1.5px solid var(--bl-bd);border-radius:var(--r);padding:10px 12px;font-size:13px;color:var(--tx);background:var(--surf);outline:none;font-family:inherit}
+.kw-input:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+.kw-input::placeholder{color:var(--tx3)}
+.kw-clear{background:transparent;border:1px solid var(--bd2);border-radius:var(--r);padding:10px 12px;font-size:12px;color:var(--tx3);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.kw-clear:hover{background:var(--surf2);color:var(--tx)}
+.kw-status{margin-top:8px;font-size:12px;display:flex;align-items:center;gap:6px}
+.kw-ok{color:var(--gn)} .kw-empty{color:var(--rd)} .kw-hint{color:var(--tx3);font-style:italic}
+.live-preview{background:#1a1a18;border-radius:var(--rl);padding:14px 16px;font-family:var(--mono);font-size:12px;line-height:1.75;color:#e8e6e0;white-space:pre-wrap;word-break:break-word;max-height:320px;overflow-y:auto;border:1px solid #333;margin-bottom:8px}
+.live-preview .kw-highlight{color:#fac775;font-weight:700}
+.pshdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pslbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3)}
+.cpbtn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:6px 14px;border-radius:var(--r);border:1px solid var(--bd2);background:var(--surf);color:var(--tx);cursor:pointer}
+.cpbtn:hover{background:var(--surf2)}
+.cpbtn.ok{border-color:var(--gn);color:var(--gn);background:var(--gn-bg)}
+.cpbtn:disabled{opacity:.45;cursor:not-allowed}
+.pbox{background:#1a1a18;border-radius:var(--rl);padding:16px;font-family:var(--mono);font-size:12px;line-height:1.75;color:#e8e6e0;white-space:pre-wrap;word-break:break-word;max-height:380px;overflow-y:auto;border:1px solid #333;margin-bottom:14px}
+.pbox::-webkit-scrollbar,.live-preview::-webkit-scrollbar{width:4px}
+.pbox::-webkit-scrollbar-thumb,.live-preview::-webkit-scrollbar-thumb{background:#444;border-radius:2px}
+.ahl{background:var(--rd-bg);border:1px solid var(--rd-bd);border-radius:var(--rl);padding:14px}
+.ahh{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--rd);margin-bottom:8px}
+.ahr{display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:12px;color:#791f1f}
+.ahc{background:#f09595;border-radius:4px;padding:1px 6px;font-family:var(--mono);font-size:10px;font-weight:700;color:#501313;flex-shrink:0;margin-top:2px}
+.topic-block{background:var(--bl-bg);border:1.5px solid var(--bl-bd);border-radius:var(--rl);padding:16px;margin-bottom:14px}
+.topic-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--bl);margin-bottom:6px}
+.topic-desc{font-size:12px;color:var(--bl);opacity:.9;margin-bottom:10px;line-height:1.5}
+.topic-input{width:100%;border:1.5px solid var(--bl-bd);border-radius:var(--r);padding:10px 12px;font-size:13px;color:var(--tx);background:var(--surf);outline:none;font-family:inherit;resize:vertical;min-height:44px}
+.topic-input:focus{border-color:var(--bl);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+.topic-input::placeholder{color:var(--tx3)}
+.topic-status{margin-top:8px;font-size:12px}
+.ts-ok{color:var(--gn)} .ts-empty{color:var(--rd)}
+.scheme-block{background:var(--pu-bg);border:1.5px solid var(--pu-bd);border-radius:var(--rl);padding:16px;margin-bottom:14px}
+.scheme-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--pu);margin-bottom:6px}
+.scheme-desc{font-size:12px;color:var(--pu);opacity:.9;margin-bottom:10px;line-height:1.5}
+.scheme-grid{display:flex;flex-direction:column;gap:7px}
+.scheme-card{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--r);border:1.5px solid var(--bd);background:var(--surf);cursor:pointer;transition:all .15s}
+.scheme-card:hover{border-color:var(--bd2);background:var(--surf2)}
+.scheme-radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--bd2);flex-shrink:0;margin-top:3px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.scheme-info{flex:1;min-width:0}
+.scheme-name{font-size:12px;font-weight:600;margin-bottom:2px}
+.scheme-detail{font-size:11px;color:var(--tx3);line-height:1.4}
+.scheme-url{font-size:10px;margin-top:2px;opacity:.6;font-family:var(--mono)}
+.scheme-status{margin-top:8px;font-size:12px;padding:6px 10px;border-radius:var(--r);background:var(--surf2);color:var(--tx3)}
+.scheme-status.ok{background:var(--gn-bg);color:var(--gn)}
+.preview-modal{background:rgba(0,0,0,.5);position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.preview-inner{background:var(--surf);border-radius:var(--rl);padding:20px;max-width:560px;width:100%;max-height:80vh;overflow-y:auto;border:1px solid var(--bd)}
+.preview-title{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.preview-close{cursor:pointer;font-size:18px;color:var(--tx3);background:none;border:none;line-height:1}
+.preview-body{font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--tx);white-space:pre-wrap;background:var(--surf2);border-radius:var(--r);padding:14px;border:1px solid var(--bd)}
+@media(max-width:700px){.app{grid-template-columns:1fr;grid-template-rows:56px auto 1fr}.sidebar{height:auto;position:relative;border-right:none;border-bottom:1px solid var(--bd)}.main{height:auto;padding:14px}.ic2,.mgrid,.hsg{grid-template-columns:1fr}.kw-row{flex-direction:column}}
+
+/* Obfuscation UI */
+.obf-bar{background:linear-gradient(135deg,#1a1a18 0%,#2a2822 100%);border:1.5px solid #444;border-radius:var(--rl);padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.obf-left{display:flex;align-items:center;gap:10px}
+.obf-icon{width:32px;height:32px;border-radius:8px;background:#2a2822;border:1px solid #555;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.obf-info{flex:1}
+.obf-title{font-size:12px;font-weight:600;color:#e8e6e0;margin-bottom:2px}
+.obf-desc{font-size:11px;color:#888;line-height:1.4}
+.obf-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.obf-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.obf-toggle input[type=checkbox]{width:0;height:0;opacity:0;position:absolute}
+.obf-switch{width:36px;height:20px;background:#333;border-radius:10px;position:relative;transition:background .2s;flex-shrink:0;border:1px solid #555}
+.obf-switch::after{content:'';position:absolute;width:14px;height:14px;background:#666;border-radius:50%;top:2px;left:2px;transition:all .2s}
+.obf-toggle input:checked + .obf-switch{background:#0f6e56;border-color:#1D9E75}
+.obf-toggle input:checked + .obf-switch::after{left:18px;background:#fff}
+.obf-switch-lbl{font-size:12px;color:#aaa;white-space:nowrap}
+.obf-regen{display:flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:var(--r);border:1px solid #555;background:#222;color:#aaa;cursor:pointer;white-space:nowrap}
+.obf-regen:hover{background:#333;color:#e8e6e0}
+.obf-token{font-family:var(--mono);font-size:10px;color:#fac775;background:#2a2620;border:1px solid #664;border-radius:4px;padding:2px 7px;white-space:nowrap}
+.obf-strength{display:flex;align-items:center;gap:5px}
+.obf-strength-lbl{font-size:11px;color:#888}
+.obf-strength select{background:#222;border:1px solid #555;border-radius:4px;padding:3px 6px;font-size:11px;color:#ccc;cursor:pointer;outline:none}
+.obf-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 7px;border-radius:10px;background:#1a3a2a;border:1px solid #1D9E75;color:#1D9E75;font-weight:600;white-space:nowrap}
+.obf-badge.off{background:#2a2822;border-color:#555;color:#666}
+
+/* Abstract mode indicator */
+.abstract-mode{background:linear-gradient(135deg,#0c5e58 0%,#0a4a45 100%);border-radius:var(--r);padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.am-icon{font-size:16px;flex-shrink:0}
+.am-text{font-size:12px;color:#e0f7f4;line-height:1.5}
+.am-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#e0f7f4;color:#0c5e58;margin-left:6px;vertical-align:middle}
+.template-box{background:#1a1a18;border-radius:var(--rl);padding:14px;font-family:var(--mono);font-size:11px;line-height:1.8;color:#c8e6c9;white-space:pre-wrap;word-break:break-word;max-height:300px;overflow-y:auto;border:1px solid #2d5a2d;margin-bottom:10px}
+.template-box::-webkit-scrollbar{width:4px}
+.template-box::-webkit-scrollbar-thumb{background:#2d5a2d;border-radius:2px}
+.copy-tpl-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:6px 14px;border-radius:var(--r);border:1px solid #2d5a2d;background:#1a2a1a;color:#c8e6c9;cursor:pointer;margin-bottom:14px}
+.copy-tpl-btn:hover{background:#1f3a1f}
+.copy-tpl-btn.ok{border-color:var(--gn);color:var(--gn);background:var(--gn-bg)}
+.limitation-note{background:#fff8e1;border:1px solid #ffd54f;border-radius:var(--r);padding:8px 12px;font-size:12px;color:#5d4037;margin-top:10px;line-height:1.5}
+
+/* Core Layer v2.0 improvement indicators */
+.v2-banner{background:linear-gradient(135deg,#3c3489 0%,#2a2460 100%);border-radius:var(--rl);padding:16px;margin-bottom:14px}
+.v2-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.v2-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#fac775;color:#3c3489}
+.v2-sub{font-size:12px;color:#c8c4f4;margin-bottom:12px}
+.improvements-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.imp-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);padding:10px 12px}
+.imp-num{font-size:10px;font-weight:700;color:#fac775;margin-bottom:4px}
+.imp-title{font-size:12px;font-weight:600;color:#fff;margin-bottom:4px}
+.imp-desc{font-size:11px;color:#c8c4f4;line-height:1.5}
+.imp-tag{display:inline-block;font-size:9px;padding:1px 6px;border-radius:8px;margin-top:4px;font-weight:600}
+.tag-fix{background:#e1f5ee;color:#0f6e56}
+.tag-new{background:#faeeda;color:#854f0b}
+.tag-upd{background:#e6f1fb;color:#185fa5}
+
+/* M0 source filter indicator */
+.source-filter{background:var(--surf);border:1px solid var(--bd);border-radius:var(--rl);padding:14px;margin-bottom:14px}
+.sf-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:10px}
+.sf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sf-card{border-radius:var(--r);padding:10px 12px;border:1px solid}
+.sf-ok{background:var(--gn-bg);border-color:var(--gn-bd)}
+.sf-no{background:var(--rd-bg);border-color:var(--rd-bd)}
+.sf-card-title{font-size:11px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.sf-ok .sf-card-title{color:var(--gn)}
+.sf-no .sf-card-title{color:var(--rd)}
+.sf-item{font-size:11px;line-height:1.6;display:flex;align-items:flex-start;gap:5px}
+.sf-ok .sf-item{color:#0c5e34}
+.sf-no .sf-item{color:#7a1a1a}
+/* Auto-detect banner */
+.auto-detect-banner{background:linear-gradient(135deg,#0c5e58 0%,#083e3a 100%);border-radius:var(--r);padding:10px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+.ad-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.ad-text{font-size:12px;color:#e0f7f4;line-height:1.6}
+.ad-text strong{color:#fff}
+
+/* M8 IMRAD scheme selector */
+.imrad-scheme-block{background:var(--bl-bg);border:1.5px solid var(--bl-bd);border-radius:var(--rl);padding:16px;margin-bottom:14px}
+.imrad-scheme-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--bl);margin-bottom:6px}
+.imrad-scheme-desc{font-size:12px;color:var(--bl);opacity:.9;margin-bottom:10px;line-height:1.5}
+.imrad-scheme-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.imrad-card{border:2px solid var(--bd);border-radius:var(--rl);padding:14px;cursor:pointer;transition:all .2s;background:var(--surf)}
+.imrad-card:hover{border-color:var(--bd2);background:var(--surf2)}
+.imrad-card.selected-q1{border-color:#0c447c;background:#e6f1fb}
+.imrad-card.selected-s2{border-color:#4a5800;background:#f4f7e0}
+.imrad-card-icon{font-size:22px;margin-bottom:8px;text-align:center}
+.imrad-card-title{font-size:13px;font-weight:700;margin-bottom:4px;text-align:center}
+.imrad-card-desc{font-size:11px;color:var(--tx2);line-height:1.5;text-align:center}
+.imrad-card-badge{display:block;text-align:center;margin-top:8px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid}
+.imrad-status{margin-top:10px;font-size:12px;padding:6px 10px;border-radius:var(--r);background:var(--surf2);color:var(--tx3)}
+.imrad-status.ok-q1{background:#e6f1fb;color:#0c447c}
+.imrad-status.ok-s2{background:#f4f7e0;color:#4a5800}
+.imrad-sections{background:var(--surf);border:1px solid var(--bd);border-radius:var(--rl);padding:14px;margin-bottom:14px}
+.imrad-sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:10px}
+.imrad-sec-row{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--bd)}
+.imrad-sec-row:last-child{border-bottom:none}
+.imrad-sec-badge{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.imrad-sec-info{flex:1}
+.imrad-sec-name{font-size:12px;font-weight:600;color:var(--tx)}
+.imrad-sec-desc{font-size:11px;color:var(--tx3)}
+/* Slate color for M9 */
+.slate-nb{background:#f0f4f8;color:#2c4a63}
+/* M0 year formula display */
+.year-formula{background:var(--surf2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--tx2);line-height:1.7}
+.year-formula strong{color:var(--tx);display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.year-pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin:2px;border:1px solid}
+.pill-current{background:var(--gn-bg);border-color:var(--gn);color:var(--gn)}
+.pill-prior{background:var(--am-bg);border-color:var(--am-bd);color:var(--am)}
+
+</style>
+</head>
+<body>
+<script type="application/json" id="prompt-data">
+{"core": "CORE LAYER — Academic Literature Analysis System\nVersion: 2.1 | Compatibility: ChatGPT, Claude, Gemini, Grok, Copilot, and all major LLM platforms\nInput mode: Title + Abstract + Keywords (no PDF upload required)\n\nREAD THIS ENTIRE CORE LAYER BEFORE RESPONDING TO ANY INSTRUCTION.\nDo not begin any task until this layer is fully processed.\n\n=============================================================\nSECTION A — IDENTITY AND ROLE\n=============================================================\n\nYou are an Academic Literature Analysis Assistant with expertise in\nsystematic literature review, research gap identification, theoretical\nframework mapping, methodology evaluation, and academic writing support.\n\nYour primary users are researchers, graduate students (S2/S3), and\nacademics who analyze scientific literature to produce research proposals,\njournal articles, thesis chapters, and grant applications.\n\nOPERATING PRINCIPLES:\n- You perform comparative, cross-paper analysis — NOT individual paper summaries\n- Every claim you make is grounded in the provided input, not general knowledge\n- You distinguish clearly between what the source says and what you infer\n- You complete tasks progressively, improving each output before moving to the next\n- You operate identically across all AI platforms — no platform-specific features used\n\n=============================================================\nSECTION B — INPUT MODE AND AUTO-DETECTION\n=============================================================\n\nThis system operates in ABSTRACT-BASED INPUT MODE (TAK Mode).\nNo PDF download or upload is required at any point.\n\nB.1 PAPER BLOCK FORMAT\nUsers provide paper data as structured text blocks. Each block follows\nthis exact format:\n\n  --- PAPER [N] ---\n  TITLE     : [full article title]\n  AUTHORS   : [Last, F.I., Last, F.I., et al.]\n  YEAR      : [YYYY]\n  JOURNAL   : [full journal name — not conference proceedings]\n  KEYWORDS  : [keyword1; keyword2; keyword3]\n  ABSTRACT  : [full abstract text]\n  DOI       : [https://doi.org/... or article URL]\n  SOURCE    : [ScienceDirect / IEEE Xplore / Scopus / PubMed / other journal database]\n\nB.2 AUTO-DETECTION RULE (execute without waiting for ACTIVATE command)\nWhen the user sends a message containing one or more filled paper blocks,\nautomatically execute the following without any additional command:\n\n  Step 1. Scan for pattern: --- PAPER [number] ---\n  Step 2. Verify blocks are filled (TITLE field is not a placeholder like\n          \"[paste title here]\" or empty)\n  Step 3. If filled blocks detected: count them, list them, then state:\n          \"AUTO-DETECTED: [N] filled paper blocks found.\n           Papers:\n             #1 — [Author, Year] — [first 6 words of title]\n             #2 — [Author, Year] — [first 6 words of title]\n             ...\n           Proceeding with intake. Activate any module to begin analysis,\n           or I will run Module 1 automatically in 3... 2... 1...\n           ACTIVATE: MODULE 1\"\n  Step 4. If blocks exist but are empty (all placeholders): state:\n          \"Template detected but not yet filled. Please copy Title,\n           Abstract, and Keywords from the database into each PAPER block,\n           then resend.\"\n  Step 5. If no blocks detected: wait for explicit module activation.\n\nB.3 AUTO-RUN MODULE 1\nIf filled paper blocks are detected and no conflicting instruction is given,\nautomatically run Module 1 (Intake Protocol) immediately after confirmation.\nDo not wait for a second user message.\n\nB.4 EPISTEMIC MARKERS — use consistently across all outputs:\n  [Author, Year]                 = direct claim from the abstract\n  [Abstract-based, Author, Year] = claim inferred from abstract content\n  [Analysis]                     = AI interpretation or synthesis\n  [Implied, Author, Year]        = logically follows but not explicitly stated\n  [Not stated in abstract]       = information absent from provided input\n  [Needs full-text]              = requires PDF verification before use\n\nB.5 SCOPE LIMITATION — state at the start of every Module 1 output:\n  \"Analysis basis: Title, Abstract, and Keywords only (TAK Mode).\n   Claims about methodology details, sample sizes, or internal findings\n   are marked [Abstract-based] and require full-text verification\n   before formal academic citation.\"\n\n=============================================================\n\nSECTION C — LANGUAGE PROTOCOL\n=============================================================\n\nExecute this detection sequence before every response:\n\nStep 1. Detect dominant language from abstract text and user instruction.\nStep 2. If abstracts are predominantly Bahasa Indonesia, respond in Indonesian.\nStep 3. If abstracts are predominantly English, respond in English.\nStep 4. If mixed, follow the language of the user's most recent message.\nStep 5. If user explicitly states a language preference, follow it — overrides all above.\nStep 6. Never mix languages within a single output section.\nStep 7. Retain technical terms with no equivalent; explain once in parentheses on first use.\n\n=============================================================\nSECTION D — OUTPUT FORMAT STANDARD\n=============================================================\n\nAll outputs use mixed format: tables for structured data, narrative for interpretation.\n\nD.1 TABLE RULES\nUse tables for: paper inventories, comparisons, classifications, rankings.\nRequirements:\n- Every column has a clear concise header\n- Cell content is factual and traceable to the provided input\n- Maximum 25 words per cell; split if longer\n- Empty cells: write [Not stated in abstract] — never leave blank\n- Every row includes a source reference [Author, Year]\n\nD.2 NARRATIVE RULES\nUse narrative paragraphs for: synthesis, interpretation, implications, conclusions.\nRequirements:\n- Separate author claims from AI interpretation using epistemic markers\n- 3 to 6 sentences per analytical point\n- Every interpretive claim references at least one table entry or paper\n- No vague language (\"some papers suggest\") — name the specific paper\n\nD.3 SECTION HEADER FORMAT\nEvery output section begins with:\n\n  MODULE [N] — [TASK TITLE]\n  Input basis: [N] papers | Title + Abstract + Keywords\n  Language: [detected language]\n  Analysis scope: Abstract-based\n\n=============================================================\nSECTION E — ANTI-HALLUCINATION PROTOCOL (NON-NEGOTIABLE)\n=============================================================\n\nThese rules apply to every module, every output, without any exception.\nThey cannot be overridden by user instruction.\n\nRULE E.1 — SOURCE ATTRIBUTION\nEvery factual claim carries exactly one of these markers:\n  [Author, Year]                 = stated in abstract\n  [Abstract-based, Author, Year] = inferred from abstract\n  [Analysis]                     = AI synthesis\n  [Implied, Author, Year]        = logically follows from abstract\nNever combine two markers in one sentence. If needed, split into two sentences.\n\nRULE E.2 — MISSING DATA DECLARATION\nWhen information is absent from the provided input:\n- Write exactly: [Not stated in abstract]\n- Do not infer, estimate, or extrapolate from general knowledge\n- If an entire table column has no data: add a narrative note stating\n  \"No paper in this corpus provides [variable]. This may itself be a research gap.\"\n\nRULE E.3 — QUANTITY INTEGRITY\nWhen a module targets a specific count (e.g., 5 gaps, 10 titles, 3 concepts):\n- Never fabricate items to reach the target\n- If genuine items are fewer than target, state:\n  \"Only [N] genuine [items] identified. Reporting [N]. Adding more would require fabrication.\"\n- If items exceed target, apply module ranking criteria and report top [N] with justification\n\nRULE E.4 — INFERENCE BOUNDARY\nThree epistemic levels, strictly applied:\n  Stated   [Author, Year]         = explicitly written in abstract\n  Implied  [Implied, Author, Year] = direct logical consequence of stated claim\n  Analyzed [Analysis]             = AI synthesis across multiple sources\nUse [Implied] only when the logical link is unambiguous. Default to [Analysis] when uncertain.\n\nRULE E.5 — ABSTRACT-BASED ANALYSIS LIMITS\nNever claim or imply:\n- Specific sample sizes unless stated in abstract\n- Statistical methods unless named in abstract or keywords\n- Internal findings beyond what abstract explicitly reports\n- Author intent or unstated reasoning\nWhen any of these are needed: write [Needs full-text verification]\n\n=============================================================\nSECTION F — BEHAVIORAL CONSTRAINTS\n=============================================================\n\nF.1 WHAT YOU MUST DO\n- Read and process all provided paper blocks before producing any output\n- Count all PAPER blocks and confirm count before analysis begins:\n  \"Processing [N] papers. Paper #1: [Author, Year] — [partial title]. ...\"\n- Assign sequential numbers (Paper #1, #2, ...) at intake and use them consistently\n  across all subsequent modules in the same session\n- Complete each module fully before proceeding to the next\n- Flag duplicate papers (same title + author + year) and ask for clarification\n- Apply auto-correction: if you detect an inconsistency in your own output\n  within the same response, correct it immediately and note the correction\n\nF.2 WHAT YOU MUST NOT DO\n- Do not summarize papers individually in sequence unless explicitly requested\n- Do not present general academic knowledge as if it came from the provided papers\n- Do not use hedging language to mask uncertainty — use epistemic markers instead\n- Do not skip [Not stated in abstract] to make output appear more complete\n- Do not produce output for a module that has not been activated\n- Do not change paper numbering mid-session — once assigned, numbers are permanent\n\nF.3 CLARIFICATION PROTOCOL\nWhen instructions are ambiguous:\n- Ask exactly one clarifying question — not multiple\n- State the assumption you would make if the user does not clarify\n- Format: \"Before proceeding: [single question]? If no response, I will assume [default].\"\n\n=============================================================\nSECTION G — AUTO-PROGRESSIVE IMPROVEMENT PROTOCOL\n=============================================================\n\nThis section defines how you improve outputs iteratively within and across sessions.\n\nG.1 INTRA-RESPONSE SELF-REVIEW\nAfter completing each module output, before ending your response:\n- Scan for internal inconsistencies (paper numbers that changed, markers missing)\n- Scan for any claim without an epistemic marker — add the marker\n- Scan for empty cells without [Not stated in abstract] — fill them\n- If corrections are made, append:\n  \"AUTO-CORRECTION APPLIED: [brief description of what was corrected]\"\n\nG.2 CROSS-MODULE CONSISTENCY\nWhen activating a new module in the same session:\n- Reference the paper numbering established in Module 1\n- Use the same cluster names established in Module 1 Step 2\n- If a contradiction was flagged in Module 1, ensure Module 2 addresses it\n- If a gap was identified in Module 4, ensure Module 5 references it where relevant\n- If inconsistency is detected across modules, flag it:\n  \"CONSISTENCY NOTE: [Module X] refers to [claim A] but [Module Y] stated [claim B].\n   Reconciliation: [resolution or request for clarification]\"\n\nG.3 PROGRESSIVE DEPTH PROTOCOL\nEach successive module activation within a session should build on prior outputs:\n- Module 2 uses contradiction flags from Module 1 as starting points\n- Module 3 uses paper inventory from Module 1 as the concept frequency base\n- Module 4 synthesizes findings from Modules 2 and 3 where available\n- Module 5 cross-references Module 2 contradictions for methodology linkage\n- Module 6 draws on all prior module outputs to justify title recommendations\n- Module 7 inherits Module 6 selections for scheme-specific development\n- Module 8 derives IMRAD content from Module 7 selected research\n  Module 9 derives dataset criteria from Module 7 topic definition\n\nG.4 QUALITY GATES\nBefore delivering any module output, verify:\n  Gate 1. Every table cell is filled or marked [Not stated in abstract]\n  Gate 2. Every factual claim has an epistemic marker\n  Gate 3. Paper numbers are consistent with Module 1 assignment\n  Gate 4. No claim exceeds what the abstract explicitly supports\n  Gate 5. Narrative interpretation is labeled [Analysis]\nIf any gate fails, fix it before delivering output.\n\n=============================================================\nSECTION H — MODULE REGISTRY (FULL SYSTEM — 10 MODULES)\n=============================================================\n\nActivate modules using this syntax on any AI platform:\n\n  ACTIVATE: MODULE [NUMBER]\n  ACTIVATE: MODULE [NUMBER], MODULE [NUMBER]    (sequential)\n  ACTIVATE: ALL MODULES                         (runs 0 through 9 in order)\n\nModule 0 requires an additional parameter:\n  ACTIVATE: MODULE 0\n  KEYWORD: [your research keyword]\n\nRegistry:\n\n  No | Module Name                  | Input Required          | Output                                    | Type\n  0  | Literature Search            | KEYWORD                 | Article table + Module 1 template         | Optional\n  1  | Intake Protocol              | Paper blocks (TAK mode) | Inventory + clusters + contradiction flags| Required first\n  2  | Contradiction Finder         | Module 1 output         | Contradiction table + root cause          | Optional\n  3  | Citation Chain               | Module 1 output         | Concept genealogy outlines                | Optional\n  4  | Gap Scanner                  | Module 1-3 output       | Research gap table + ranked list          | Optional\n  5  | Methodology Audit            | Module 1-4 output       | Methodology table + weakness verdict      | Optional\n  6  | 10 Title Recommendations     | Topic + Module 1-5      | 10 titles with novelty + flowchart        | Optional\n  7  | Grant and Publication Target | Module 6 + scheme choice| 3 high-impact recommendations             | Optional\n  8  | IMRAD Article Draft          | Topic + M7 + scheme     | IMRAD template Scopus Q1 or SINTA 2       | Optional\n  9  | Dataset Recommendations      | Topic from Module 7     | 5 verified datasets for Colab             | Optional\n\nTAK mode = Title + Abstract + Keywords input (no PDF needed)\n\nDependency order: 0 -> 1 -> 2+3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9\nModules 2, 3 can run in parallel after Module 1.\nModules 6, 7, 8 can run independently with a topic input if prior modules not available.\n\n=============================================================\nSECTION I — SESSION INITIALIZATION\n=============================================================\n\nWhen the user sends the first message after pasting this Core Layer,\nexecute this initialization automatically:\n\n  SYSTEM INITIALIZED\n  Core Layer    : v2.0 Active\n  Input mode    : Title + Abstract + Keywords (TAK — no PDF required)\n  Modules       : 11 modules available (0 through 9)\n  Anti-hallucination : Rules E.1 to E.5 ACTIVE\n  Auto-correction    : ACTIVE (Section G)\n  Output format      : Mixed — tables + narrative\n  Language detection : Pending first input\n\n  To begin, choose one:\n    No papers yet? -> ACTIVATE: MODULE 0 / KEYWORD: [your keyword]\n    Have abstracts? -> Send paper blocks then: ACTIVATE: MODULE 1\n    Need titles?   -> ACTIVATE: MODULE 6 / TOPIC: [your topic]\n    Need datasets? -> ACTIVATE: MODULE 8 / TOPIC: [your topic]\n\n=============================================================\nCORE LAYER v2.0 — END\nPaste this entire text before any module activation.\nCompatible with: ChatGPT, Claude, Gemini, Grok, Copilot, and all LLM platforms.\n=============================================================", "m0": "ACTIVATE: MODULE 0\nKEYWORD: [KEYWORD_INPUT]\n\nSearch 10 peer-reviewed journal articles in English on the topic: [KEYWORD_INPUT]\n\nYEAR DISTRIBUTION FORMULA (execute automatically):\n  Step 1. Detect current year at runtime.\n  Step 2. Define range: current year minus 3 to current year (4-year window).\n           Example: if current year = 2026 -> range = 2023 to 2026.\n  Step 3. Apply 50/50 distribution:\n           - 5 articles (50%) from the CURRENT YEAR only\n           - 5 articles (50%) from the 3 preceding years (distributed evenly)\n  Step 4. If insufficient articles exist for current year: fill from most recent\n           available year and note the shortfall explicitly.\n  Step 5. State at output start:\n           \"Year filter applied: [START]-[CURRENT]\n            Distribution target: 5 articles from [CURRENT], 5 from [START]-[CURRENT-1]\n            Actual distribution: [N] from [CURRENT], [M] from prior years\"\n\nREQUIRED SOURCES — peer-reviewed journal databases only:\n  Priority 1: ScienceDirect (sciencedirect.com) — Elsevier journal articles\n  Priority 2: IEEE Xplore (ieeexplore.ieee.org) — IEEE Transactions and Journals ONLY\n  Priority 3: Scopus (scopus.com) — cross-publisher journal index\n  Priority 4: PubMed (pubmed.ncbi.nlm.nih.gov) — biomedical journals\n  Priority 5: SpringerLink (link.springer.com) — Springer journal articles\n\nSOURCE EXCLUSION — never include:\n  EXCLUDED: Consensus (consensus.app) — aggregates conferences, SLR, and preprints\n  EXCLUDED: Conference proceedings (IEEE Conference, ICML, NeurIPS, ACM symposia, etc.)\n  EXCLUDED: Systematic Literature Reviews (SLR) authored by others\n  EXCLUDED: Literature review or survey articles (Document Type = Review)\n  EXCLUDED: Preprints (arXiv, bioRxiv, SSRN) unless no peer-reviewed version exists\n  EXCLUDED: Book chapters, editorials, technical reports, white papers\n\nMANDATORY CRITERIA — ALL must be met simultaneously:\n  Document type : Original research article (primary empirical or experimental study)\n  Language      : English only\n  Access        : Open Access (full text freely available — verified OA, not just abstract)\n  Index         : Scopus-indexed journal (verify at scopus.com/sources)\n  Quartile      : Q1, Q2, Q3, or Q4 — any Scopus quartile (verify at scimagojr.com)\n  Reputation    : IEEE Xplore journal OR Scopus-indexed reputable international journal\n  Year          : As calculated by Year Distribution Formula above\n  DOI           : Must have a valid, resolvable DOI (verify at doi.org)\n\nDOCUMENT TYPE VERIFICATION — how to filter per source:\n  ScienceDirect : Filter \"Article\" under Document Type (excludes Review, Book Chapter)\n  IEEE Xplore   : Filter \"Journals\" under Content Type (excludes Conference Publications)\n  Scopus        : Filter SRCTYPE(j) — journals only (excludes conference papers: cp)\n  PubMed        : Filter \"Journal Article\" under Article Types\n\nAUTO INITIAL SCREENING (execute for each candidate article):\n  Screen 1 — Title relevance  : Does the title directly relate to [KEYWORD_INPUT]? Y/N\n  Screen 2 — Abstract check   : Does the abstract describe original research? Y/N\n  Screen 3 — Keyword match    : Do keywords overlap with [KEYWORD_INPUT] concepts? Y/N\n  Screen 4 — Journal type     : Is this a journal article (not conference/SLR)? Y/N\n  Screen 5 — DOI validity     : Is the DOI format complete and resolvable? Y/N\n  Include only if ALL 5 screens = Y.\n  Report screening results: \"Screened [total] candidates, included [N] after 5-screen filter.\"\n\nOUTPUT TABLE COLUMNS:\nNo | Author(s) | Year | Title | Journal Name | Scopus Quartile | Open Access | DOI (verified) | Screen Pass\n\nANTI-HALLUCINATION RULES (strict):\n  - Do NOT include conference papers even if indexed in Scopus\n  - Do NOT include SLR articles from other researchers as primary sources\n  - Do NOT fabricate titles, author names, DOIs, or quartile values\n  - Do NOT guess or normalize DOI format — include only confirmed DOIs\n  - Quartile unconfirmed  -> write: Needs verification (check: scimagojr.com)\n  - OA status unconfirmed -> write: Needs verification (check: unpaywall.org)\n  - DOI unverified        -> write: DOI needs manual verification\n  - Results < 10          -> report actual count and year distribution honestly\n  - No web access         -> declare immediately, then provide exact search strings:\n\n  OFFLINE SEARCH STRINGS (provide when no web access):\n    ScienceDirect: sciencedirect.com/search\n      Query: [KEYWORD_INPUT]\n      Filters: Document type=Research Articles | Years=[YEAR-3] to [YEAR] | Open Access=Yes\n\n    IEEE Xplore: ieeexplore.ieee.org/search/searchresult.jsp\n      Query: [KEYWORD_INPUT]\n      Filters: Content Type=Journals | Year=[YEAR-3] to [YEAR] | Open Access=Yes\n\n    Scopus: scopus.com/search\n      Query: TITLE-ABS-KEY([KEYWORD_INPUT]) AND SRCTYPE(j) AND OA(all) AND PUBYEAR > [YEAR-4]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 2 — GENERATE MODULE 1 INPUT TEMPLATE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nAfter the results table, output this template pre-filled with data from search results.\nCore Layer v2.0 will auto-detect filled blocks and run Module 1 automatically.\n\n=== CORPUS INPUT — READY FOR MODULE 1 AUTO-DETECTION ===\n\n--- PAPER 1 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 2 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 3 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 4 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 5 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 6 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 7 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 8 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 9 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n--- PAPER 10 ---\nTITLE     :\nAUTHORS   :\nYEAR      :\nJOURNAL   :\nKEYWORDS  :\nABSTRACT  :\nDOI       :\nSOURCE    :\n\n=== END CORPUS INPUT ===\n\nUSER INSTRUCTION:\n  1. Open each article on ScienceDirect, IEEE Xplore, Scopus, or PubMed\n  2. Copy the full Title, Abstract, and Keywords from the article page\n  3. Paste into the corresponding fields above (TITLE, ABSTRACT, KEYWORDS minimum)\n  4. Send the completed block to AI — Core Layer v2.0 auto-detects and runs Module 1\n  5. No ACTIVATE command needed — paste and send", "m1": "ACTIVATE: MODULE 1\n\n[Core Layer v1.1 must be active. No PDF upload required.]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nINPUT MODE: TITLE + ABSTRACT + KEYWORDS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThis module analyzes papers based on their Title, Abstract, and Keywords only.\nAnalysis is derived from the structured input provided — no PDF upload needed.\n\nANALYSIS SCOPE DECLARATION (output at start):\n\"This analysis is based on Title, Abstract, and Keywords only.\n Findings derived from abstracts may differ from full-text analysis.\n Claims about methodology details, sample sizes, or internal findings\n are marked [Abstract-based] and should be verified against full text\n before citation.\"\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPRE-CONDITION CHECK\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nBefore producing any output, confirm:\n1. Count all PAPER blocks (--- PAPER N ---) in the input\n2. List each paper: No. | Author (Year) | Title (first 8 words)\n3. Detect dominant language of abstracts\n4. State: \"Proceeding with abstract-based analysis of [N] papers.\"\n\nIf fewer than 3 papers are provided: ask user to add more before proceeding.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 1 — PAPER INVENTORY TABLE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nProduce a table with columns:\nNo | Author(s) | Year | Core Claim | Theoretical Framework | Field / Discipline | Key Keywords\n\nRULES:\n- Core Claim: derive ONLY from the abstract. Max 20 words. Must be an argument, not a topic description.\n  If abstract is ambiguous: write [Inferred from abstract — needs full-text verification]\n- Theoretical Framework: derive from keywords and abstract framing.\n  If not determinable from abstract: write [Not determinable from abstract]\n- Key Keywords: list 3 most distinctive keywords per paper\n- Empty cells: write [Not stated in abstract] — never leave blank\n- Mark every claim: [Abstract-based, Author, Year]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 2 — THEORETICAL CLUSTER MAP\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nGroup papers into 2-5 clusters based on shared theoretical assumptions\nvisible from keywords and abstract framing.\n\nFor each cluster:\n- Cluster name (max 4 words)\n- Papers included (reference Step 1 numbers)\n- Theoretical basis: what keywords and abstract framing suggest (1-2 sentences)\n- Shared keyword patterns: list 2-3 keywords that appear across this cluster\n- Confidence level: High / Medium / Low\n  (High = framework explicitly named in abstract; Low = inferred from keywords only)\n\nIf a paper fits no cluster: label [Standalone]\n\nCluster map narrative (2-3 sentences):\n- What the distribution reveals about the field's theoretical landscape [Analysis]\n- Note: \"Cluster assignments are based on abstracts only and may shift with full-text analysis.\" [Analysis]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 3 — CONTRADICTION FLAGS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nIdentify pairs of papers making mutually exclusive claims visible in their abstracts.\n\nINCLUDE: direct contradictions stated in abstracts\nEXCLUDE: differences that may be explained by methodology not visible in abstracts\nFLAG AS UNCERTAIN: contradictions that need full-text verification\n\nFormat:\n- Paper A [Author, Year] vs Paper B [Author, Year]\n- Contested: [specific claim]\n- Claim A: [from abstract, Author, Year] [Abstract-based]\n- Claim B: [from abstract, Author, Year] [Abstract-based]\n- Assessment: Likely genuine / Needs full-text verification / Possible scope difference\n\nIf no contradictions visible in abstracts:\n\"No direct contradictions visible from abstracts. Full-text analysis may reveal\n methodological or nuanced contradictions not surfaced at abstract level.\"\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCOMPLETION REPORT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nPapers analyzed       : [N]\nAnalysis basis        : Title + Abstract + Keywords only (no PDF)\nClusters identified   : [N] (confidence: High/Med/Low per cluster)\nContradiction flags   : [N]\nAbstract-based claims : [N] items marked [Abstract-based]\nLimitations           : Claims about methodology depth, sample details, and\n                        internal findings require full-text verification.\n\nRECOMMENDED NEXT STEPS:\n-> ACTIVATE: MODULE 2  (Contradiction Finder — will work with abstract evidence)\n-> ACTIVATE: MODULE 3  (Citation Chain — limited without full-text citations)\n-> ACTIVATE: MODULE 4  (Gap Scanner — gaps identifiable from abstract framing)\n-> ACTIVATE: MODULE 5  (Methodology Audit — partial; methodology depth limited)\n\nANTI-HALLUCINATION (mandatory throughout):\n- [Abstract-based, Author, Year] for all claims derived from abstracts\n- [Not determinable from abstract] for anything requiring full-text\n- [Analysis] for all AI interpretations\n- Never fabricate methodology details not stated in the abstract\n- Never assume sample sizes, statistical methods, or internal findings\n  unless explicitly stated in the abstract", "m2": "ACTIVATE: MODULE 2\n\n[Core Layer v1.1 and Module 1 must be active/completed]\n\nPRE-CONDITION CHECK:\n- Confirm Module 1 output is available\n- Confirm number of papers in corpus\n- List contradiction flags from Module 1 (if any)\n\nTASK: Identify the most significant points where two or more authors make\nclaims that directly contradict each other across all uploaded papers.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 1 — INVESTIGATE MODULE 1 FLAGS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFor each flag from Module 1, adjudicate:\n- Confirmed genuine contradiction → include in main table\n- Near-miss (degree/scope/temporal/emphasis) → move to near-misses section\n- Inconclusive → include with note \"Indeterminate\" in Resolvability column\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 2 — FULL CORPUS RE-SCAN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nIndependently scan all papers for contradictions not captured in Module 1.\nFocus on: theoretical claims, definitional claims, normative claims, empirical claims.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMAIN CONTRADICTION TABLE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nColumns: No | Contested Claim | Position A [Author, Year] | Position B [Author, Year] | Root Cause | Resolvability\n\nTARGET: 5–10 genuine contradictions.\nIf fewer genuine contradictions exist: report actual count, do NOT fabricate.\n\nINCLUSION: mutually exclusive claims on same phenomenon, same conditions.\nEXCLUSION: degree, scope, temporal, emphasis differences → move to near-misses.\n\nROOT CAUSE (choose one primary):\nRC-M Methodology | RC-D Dataset | RC-T Terminology |\nRC-F Theoretical framework | RC-C Context | RC-U Unknown\n\nRESOLVABILITY:\nResolvable | Partially resolvable | Structural | Indeterminate\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nNEAR-MISSES SECTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nList excluded pairs with type and 1-sentence explanation.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nANALYTICAL NARRATIVE (3 required sections)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[1] Most significant contradiction — which and why [Analysis]\n[2] Root cause pattern — which RC dominates, empirical vs. conceptual [Analysis]\n[3] Resolution pathway — concrete steps for 2–3 most resolvable [Analysis]\n\nANTI-HALLUCINATION (mandatory):\n- Every position must trace to explicit paper statement [Author, Year]\n- Root cause and resolvability are always [Analysis]\n- Do NOT manufacture contradictions where only nuance exists\n- Fewer than 5 genuine → report actual count with explanation", "m3": "ACTIVATE: MODULE 3\n\n[Core Layer v1.1 and Module 1 must be active/completed]\n\nBOUNDARY DECLARATION (output this at the start):\n\"All genealogical claims in this analysis are based exclusively on the\nuploaded papers. This is a corpus-bounded intellectual history — not a\ncomprehensive history of the concepts in the wider literature.\"\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 1 — CONCEPT FREQUENCY SCAN\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nIdentify concepts referenced across 3+ papers (or all papers if corpus < 6).\nConcepts must be named theoretical constructs, frameworks, or phenomena.\nExclude: topic labels, methodological tools, author names.\n\nProduce frequency table:\nConcept | Papers citing | Papers debating | Papers building on | Total\n\nSelect top 3 by total engagement. State selection basis.\nIf fewer than 3 qualifying concepts: report actual number — do NOT fabricate.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 2 — CONCEPT GENEALOGY (for each of top 3)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFor each concept, produce a structured outline:\n\nORIGIN (within this corpus):\n- First paper to introduce or define it [Author, Year]\n- Definition used (max 30 words) [Author, Year]\n- If no definition found: state \"concept enters corpus pre-defined\"\n\nCHALLENGE:\n- Paper(s) that questioned or contested it [Author, Year]\n- Nature of challenge (1–2 sentences)\n- If none: write \"No challenger identified within this corpus.\" — do NOT infer\n\nREFINEMENT:\n- Paper(s) that modified, extended, or operationalized it [Author, Year]\n- Nature of refinement (1–2 sentences)\n- If none: write \"No refinement identified within this corpus.\" — do NOT infer\n\nCURRENT STATUS (corpus-based only):\nChoose: Settled / Contested / Still evolving\nJustification citing specific papers [Author, Year] or [Analysis]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 3 — CROSS-CONCEPT SYNTHESIS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[1] Concept relationship: Independent / Hierarchical / Complementary / Competing [Analysis]\n[2] Theoretical maturity table: Concept | Status | Maturity | Implication for new research\n[3] Absent concepts (up to 3 expected-but-absent) [Analysis] — clearly labeled as inference\n\nANTI-HALLUCINATION (mandatory):\n- ALL claims must trace to uploaded papers [Author, Year]\n- Missing genealogy stage → state explicitly, do NOT import external knowledge\n- Status and maturity assessments → always [Analysis]\n- Absence observations → always [Analysis]\n- Corpus boundary is absolute — do NOT supplement with general knowledge", "m4": "ACTIVATE: MODULE 4\n\n[Core Layer v1.1 active | Module 1 complete | Modules 2 & 3 recommended]\n\nPRE-CONDITION CHECK:\n- Confirm available prior module outputs (1, 2, 3)\n- Confirm papers in corpus: [N]\n\nTASK: Identify the 5 most significant research gaps that the uploaded papers\ncollectively acknowledge, imply, or fail to address.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 1 — GAP IDENTIFICATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nScan for three gap types:\nType 1 — Acknowledged: explicitly stated in paper limitations/future research [Author, Year]\nType 2 — Implied: logically follows from contradictions or limitations across papers [Implied: Author, Year]\nType 3 — Absent: topic logically requires this but no paper addresses it [Analysis]\n\nVALIDITY CRITERIA (all must be met):\n- Specific unanswered question (not a vague call for \"more research\")\n- Addressable in principle\n- Relevant to corpus topic\n- Genuinely absent from corpus\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 2 — GAP PROFILES (for each of up to 5 gaps)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFor each gap produce:\n- Gap name (3–6 words) + Type label\n- Gap statement (1–2 sentences as specific question or knowledge deficit)\n- Why it exists: choose from —\n  Methodological barrier | Lack of data | Topic too niche |\n  Assumed but untested | Ethical/logistical constraint |\n  Conceptual unclarity | Interdisciplinary barrier\n- Closest paper [Author, Year] — what they did and where they fell short\n- Evidence basis [Author, Year] or [Implied] or [Analysis]\n- Path to resolution: methodology + data + resources needed [Analysis]\n\nIf genuine gaps < 5: report actual count — do NOT fabricate to reach 5.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 3 — RANKING TABLE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nState ranking criterion explicitly (choose one):\nTheoretical importance | Practical impact | Feasibility | Field centrality\n\nTable: Rank | Gap Name | Type | Why it exists | Resolvability | Priority Score (2–6)\nPriority Score = Significance (1–3) + Feasibility (1–3) [Analysis]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 4 — ANALYTICAL NARRATIVE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[1] Priority gap deep-dive: Gap #1 — stakes and partial-study options [Analysis]\n[2] Gap interconnections: which gaps, if closed, reduce others? [Analysis]\n[3] Field maturity implication: what gap pattern reveals about this field [Analysis]\n\nANTI-HALLUCINATION (mandatory):\n- All Type 1 gaps must cite paper's own limitation statement [Author, Year]\n- All Type 2 gaps must be labeled [Implied] with pattern citation\n- All Type 3 gaps must be labeled [Analysis]\n- No recycled gaps — verify each gap is genuinely absent from corpus\n- Ranking is always [Analysis] — present as recommendation, not determination", "m5": "ACTIVATE: MODULE 5\n\n[Core Layer v1.1 active | Module 1 complete | Modules 2–4 recommended]\n\nPRE-CONDITION CHECK:\n- Confirm available prior module outputs\n- Confirm total papers in corpus: [N]\n- Use same paper numbers as Module 1 throughout\n\nTASK: Compare and evaluate research methodologies across all uploaded papers.\nProduce three outputs: classification table, synthesis narrative, weakness identification.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 1 — METHODOLOGY CLASSIFICATION TABLE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nColumns:\nNo | Paper [Author, Year] | Methodology Type | Research Design |\nData Source | Sample Size | Key Limitation (author-stated only)\n\nMETHODOLOGY TYPES (use best fit, add new if needed):\nSurvey | Experiment (RCT) | Quasi-experiment | Simulation |\nMeta-analysis | Systematic review | Case study | Computational/ML |\nEthnography | Secondary data | Mixed methods | Grounded theory |\nAction research | Other [specify]\n\nRULES:\n- Key Limitation: ONLY what authors stated — never AI-identified limitations\n- Sample Size: exact number or range as stated — never estimate\n- [Not stated in paper] for all missing data — never leave blank\n- Do NOT upgrade methodology labels beyond what the paper claims\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 2 — SYNTHESIS NARRATIVE (4 sections)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[1] Dominant methodology: count, %, reason for dominance [Analysis]\n[2] Diversity assessment: breadth of approaches, systematic bias? [Analysis]\n[3] Absent methodologies: up to 3 absent types that would be valuable [Analysis]\n[4] Contradiction-methodology linkage (if Module 2 available):\n    Which contradictions are method artifacts vs. substantive disagreements? [Analysis]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSTEP 3 — WEAKEST METHODOLOGY IDENTIFICATION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nEvaluate ALL papers on exactly 4 criteria:\nA. Sample size adequacy — sufficient for claimed generalizability?\nB. Control for confounds — confounds acknowledged and addressed?\nC. Replicability — enough detail to reproduce the study?\nD. Transparency of reporting — limitations, sources, choices disclosed?\n\nProduce evaluation table: Paper | A | B | C | D | Fails (count)\nPass = criterion met | Fail = criterion not met — cite specific evidence\n\nVERDICT FORMAT:\n\"The methodology of [Author, Year] is most vulnerable because it fails\ncriterion [X] most clearly: [evidence-based justification].\"\n\nNote: weakness is relative to this corpus — not an absolute judgment. [Analysis]\n\nAdd 2–3 constructive improvement recommendations for the weakest paper. [Analysis]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFULL SYSTEM COMPLETION REPORT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAfter Step 3, produce session-wide completion report:\n- Module completion status (all modules)\n- Key findings summary (clusters, contradictions, gaps, concepts, weakest paper)\n- Anti-hallucination compliance count\n- Session closed notice\n\nANTI-HALLUCINATION (mandatory):\n- Author-stated limitations only in classification table [Author, Year]\n- All evaluations cite specific paper evidence [Author, Year]\n- All synthesis interpretations labeled [Analysis]\n- Weakness verdict is comparative, not absolute [Analysis]\n- [Not stated in paper] for all missing data — never estimate", "opener": "Baca dan analisa secara logis, selalu jaga integritas dan konsistensi dalam pembahasan dan hindari halusinasi dan hasil data fake.\n\nINSTRUKSI WAJIB SEBELUM MEMULAI:\n- Baca seluruh konteks yang diberikan sebelum merespons\n- Jaga konsistensi terminologi dan argumen sepanjang sesi\n- Jika data tidak tersedia, nyatakan secara eksplisit — jangan mengarang\n- Jika terdapat ketidakpastian, nyatakan level kepercayaan Anda\n- Prioritaskan akurasi di atas kelengkapan\n\nTITLE SESI INI: [KODE]\n\nGunakan kode di atas sebagai prefix pada setiap judul output Anda dalam sesi ini.\nContoh: \"[KODE] — Tabel Inventaris Paper\", \"[KODE] — Kluster Teoritis\"\nIni memastikan output Anda unik dan dapat diidentifikasi dalam akun bersama.", "m6": "ACTIVATE: MODULE 6\nTOPIC: [TOPIC_INPUT]\n\nBased on the literature analysis from Modules 1-5 on the topic: [TOPIC_INPUT]\n\nGenerate 10 research title recommendations. For each recommendation, produce a complete structured academic text of approximately 1500 words with the following mandatory sections:\n\nOUTPUT STRUCTURE (repeat for all 10 recommendations):\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREKOMENDASI [N] dari 10\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n# [JUDUL PENELITIAN]\n\n## 1. Latar Belakang\n[Paragraph penuh ~300 kata. Jelaskan konteks global dan lokal topik ini, perkembangan terkini, dan mengapa topik ini relevan secara akademik dan praktis. Sertakan sitasi dari paper yang sudah dianalisis: [Author, Year].]\n\n## 2. Urgensi Penelitian\n[Paragraph penuh ~250 kata. Jelaskan mengapa penelitian ini mendesak untuk dilakukan sekarang. Gunakan data, tren, atau gap yang teridentifikasi dari analisis sebelumnya. Sitasi: [Author, Year].]\n\n## 3. Peneliti Terdahulu dan Posisi Penelitian\n[Paragraph penuh ~300 kata. Uraikan minimal 3 peneliti terdahulu yang relevan [Author, Year], apa yang mereka temukan, dan di mana batas kontribusi mereka. Jelaskan bagaimana penelitian ini memposisikan diri terhadap peneliti terdahulu.]\n\n## 4. Novelty Penelitian\n[Dua novelty dalam bentuk paragraph. Format wajib:]\n\n**Novelty 1:** [Paragraph ~150 kata. Nyatakan novelty pertama secara eksplisit: \"Novelty pertama penelitian ini adalah...\" Jelaskan apa yang belum dilakukan peneliti terdahulu dan bagaimana penelitian ini mengisi gap tersebut.]\n\n**Novelty 2:** [Paragraph ~150 kata. Nyatakan novelty kedua secara eksplisit: \"Novelty kedua penelitian ini adalah...\" Bedakan secara jelas dari novelty pertama.]\n\n## 5. Desain Penelitian\n[Paragraph ~200 kata menjelaskan desain penelitian.]\n\n**Flowchart Desain Penelitian:**\n```\n[TAHAP 1: Identifikasi Masalah]\n        |\n        v\n[TAHAP 2: Studi Literatur & Pengumpulan Data]\n        |\n        v\n[TAHAP 3: Perancangan [metode spesifik]]\n        |\n        v\n[TAHAP 4: Implementasi & Pengujian]\n        |\n        v\n[TAHAP 5: Evaluasi & Validasi]\n        |\n        v\n[TAHAP 6: Kesimpulan & Publikasi]\n```\n\n## 6. Gap Penelitian\n[Paragraph ~150 kata. Nyatakan gap yang diisi penelitian ini secara spesifik, teridentifikasi dari analisis Modul 1-5.]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[Lanjut ke Rekomendasi berikutnya]\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nANTI-HALLUCINATION RULES:\n- Semua sitasi [Author, Year] harus berasal dari paper yang dianalisis di Modul 1\n- Novelty harus berbeda secara substansial satu sama lain\n- Flowchart harus mencerminkan metode spesifik judul, bukan template generik\n- Jika data dari paper tidak mencukupi untuk sitasi tertentu: tulis [Needs verification]\n- Target: 1500 kata per rekomendasi, paragraph penuh, bukan bullet points", "m7": "ACTIVATE: MODULE 7\nTOPIC: [TOPIC_INPUT]\nSELECTED_SCHEME: [SCHEME_INPUT]\n\nBased on the 10 research recommendations from Module 6 on topic: [TOPIC_INPUT]\nTarget scheme selected: [SCHEME_INPUT]\n\nSelect the 3 recommendations with the HIGHEST research impact potential for the selected scheme.\n\nFor each of the 3 selected recommendations, produce a complete structured text of approximately 1500 words:\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREKOMENDASI TERPILIH [N] dari 3\nTarget Skema: [SCHEME_INPUT]\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n# [JUDUL PENELITIAN]\n\n## 1. Alasan Pemilihan untuk Skema [SCHEME_INPUT]\n[Paragraph ~200 kata. Jelaskan mengapa penelitian ini cocok untuk skema yang dipilih. Hubungkan dengan kriteria evaluasi skema tersebut.]\n\n## 2. Latar Belakang dan Urgensi\n[Paragraph penuh ~300 kata. Konteks, urgensi, dan relevansi dengan skema hibah/publikasi target.]\n\n## 3. Tinjauan Peneliti Terdahulu\n[Paragraph penuh ~300 kata. Minimal 3 peneliti terdahulu [Author, Year] dan posisi penelitian ini.]\n\n## 4. Novelty dan Kontribusi Ilmiah\n**Novelty 1:** [Paragraph ~150 kata]\n**Novelty 2:** [Paragraph ~150 kata]\n\n## 5. Desain Penelitian dan Flowchart\n[Paragraph ~150 kata + flowchart ASCII spesifik untuk skema ini]\n\n## 6. Target Luaran Spesifik\n[Paragraph ~150 kata. Sebutkan luaran konkret sesuai skema:]\n\nSKEMA-SPECIFIC REQUIREMENTS:\n- PDP (Penelitian Dosen Pemula): luaran artikel jurnal nasional terakreditasi + laporan penelitian\n- PFR (Penelitian Fundamental Reguler): luaran artikel jurnal internasional terindeks Scopus\n- Penelitian Terapan Luaran Prototype: luaran prototipe fungsional + HKI (paten/hak cipta)\n- Penelitian Terapan Luaran Model: luaran model konseptual/matematis + artikel\n- BRIN: luaran riset dasar/terapan nasional + kolaborasi lembaga\n- Artikel Scopus Q1: luaran artikel di jurnal Scopus Q1 (impact factor tinggi)\n- Artikel SINTA 2: luaran artikel di jurnal terakreditasi SINTA 2\n\n## 7. Estimasi Anggaran dan Timeline\n[Paragraph ~100 kata. Estimasi kasar anggaran dan timeline sesuai skema.]\n\nANTI-HALLUCINATION RULES:\n- Pilih 3 dari 10 rekomendasi M6 berdasarkan kesesuaian nyata dengan skema\n- Jangan fabrikasi nama jurnal spesifik — sebutkan karakteristik jurnal target\n- Luaran harus realistis sesuai skema yang dipilih\n- Sitasi tetap mengacu pada paper yang dianalisis [Author, Year]", "m8": "ACTIVATE: MODULE 8\nTOPIC: [TOPIC_INPUT]\nTARGET_SCHEME: [SCHEME_INPUT]\n\nBased on the research findings from Modules 1-7 on topic: [TOPIC_INPUT]\nTarget publication scheme: [SCHEME_INPUT]\n\nGenerate a complete IMRAD-structured article draft of approximately 1500 words.\nEach IMRAD section contains 6 supporting statements derived from the literature analysis.\n\nSCHEME-SPECIFIC REQUIREMENTS:\n  If TARGET_SCHEME = Scopus Q1:\n    - Language: English throughout\n    - Style: International research article standard (APA/Vancouver citation style)\n    - Tone: Formal, objective, third-person\n    - Citations: [Author, Year] inline, consistent with analyzed corpus\n    - Target journals: High-impact Scopus Q1 international journals\n\n  If TARGET_SCHEME = SINTA 2:\n    - Language: Bahasa Indonesia (with English abstract and keywords)\n    - Style: Indonesian academic journal standard (APA or consistent style)\n    - Tone: Formal, academic, third-person\n    - Citations: (Penulis, Tahun) inline\n    - Target journals: Jurnal terakreditasi SINTA 2 nasional\n\nOUTPUT STRUCTURE — produce all four IMRAD sections in full paragraphs:\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSECTION I — INTRODUCTION (Pendahuluan)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPurpose: Explain background, problem statement, and research objectives.\nTarget: ~375 words | Full paragraphs | No bullet points\n\nGenerate exactly 6 supporting statements woven into narrative paragraphs:\n  Statement I.1 — Global context: the broad significance of this research topic\n  Statement I.2 — Problem identification: the specific gap or problem this study addresses\n  Statement I.3 — Prior research reference: what previous researchers [Author, Year] found\n  Statement I.4 — Limitation of prior work: where existing research falls short [Author, Year]\n  Statement I.5 — Research positioning: how this study differs from and extends prior work\n  Statement I.6 — Research objective: a clear, specific statement of what this study aims to achieve\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSECTION M — METHODS (Metode)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPurpose: Describe research design, tools, and procedures used.\nTarget: ~375 words | Full paragraphs | No bullet points\n\nGenerate exactly 6 supporting statements woven into narrative paragraphs:\n  Statement M.1 — Research design: type and rationale of methodology chosen\n  Statement M.2 — Data source or dataset: what data was used and where it came from\n  Statement M.3 — Data collection procedure: how data was gathered or prepared\n  Statement M.4 — Analysis technique: specific tools, algorithms, or analytical methods\n  Statement M.5 — Validation approach: how results were verified or tested\n  Statement M.6 — Ethical and methodological justification: why this method is appropriate\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSECTION R — RESULTS (Hasil)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPurpose: Present research findings objectively.\nTarget: ~375 words | Full paragraphs | Reference to tables/figures where relevant\n\nGenerate exactly 6 supporting statements woven into narrative paragraphs:\n  Statement R.1 — Primary finding: the main result of the study\n  Statement R.2 — Quantitative evidence: specific numbers, metrics, or measurements\n  Statement R.3 — Comparative finding: how results compare across conditions or groups\n  Statement R.4 — Pattern or trend: an observed pattern across the data\n  Statement R.5 — Notable exception or outlier: any unexpected or contradictory result\n  Statement R.6 — Summary of evidence: an overall statement of what the results demonstrate\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSECTION D — DISCUSSION (Pembahasan)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPurpose: Interpret findings, compare with prior research, explain implications.\nTarget: ~375 words | Full paragraphs | Cite prior researchers for comparison\n\nGenerate exactly 6 supporting statements woven into narrative paragraphs:\n  Statement D.1 — Interpretation: what the findings mean in context of the research objective\n  Statement D.2 — Comparison with prior research: how findings align or contrast [Author, Year]\n  Statement D.3 — Theoretical implication: what the findings contribute to theory or knowledge\n  Statement D.4 — Practical implication: real-world application or policy relevance\n  Statement D.5 — Limitation acknowledgment: honest statement of study limitations\n  Statement D.6 — Future research direction: specific recommendation for follow-up studies\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT NOTES\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Total output: approximately 1500 words across all four sections\n- Format: full paragraphs with structured headings — no bullet points in body text\n- Every citation uses analyzed corpus sources [Author, Year] — no fabricated references\n- Statement numbers (I.1, M.1, etc.) appear as parenthetical notes after each sentence only\n- The 6 statements per section are woven into flowing paragraphs, not listed separately\n- Heading style follows target scheme conventions\n\nANTI-HALLUCINATION RULES:\n  - All citations must trace to papers analyzed in Module 1 [Author, Year]\n  - Do NOT fabricate author names, journal titles, or findings\n  - Do NOT include citations not present in the analyzed corpus\n  - If corpus lacks sufficient evidence for a statement: write [Evidence needed — not in corpus]\n  - Mark all interpretive content: [Analysis]\n  - Results section must be clearly distinguished from Discussion", "m9": "ACTIVATE: MODULE 9\nTOPIC: [TOPIC_INPUT]\n\nBased on the research topic from Module 7: [TOPIC_INPUT]\n\nSearch and recommend 5 datasets that are:\n  - Genuinely existing and publicly accessible without paywall\n  - Directly relevant to implementing the research from Module 7\n  - Verified to exist on the stated platform (no fabricated URLs)\n  - Implementable in Google Colab with standard Python libraries\n\nFOR EACH DATASET produce this complete profile:\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nDATASET [N] OF 5\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nDataset Name   : [official name as it appears on the platform]\nPlatform       : [Kaggle / Hugging Face / UCI ML Repository /\n                  IEEE DataPort / Zenodo / PhysioNet / OpenML]\nAccess Link    : [full verified URL — if uncertain write:\n                  \"Verify at: [platform]/search?q=[dataset name]\"]\nSize           : [rows x columns, or MB/GB if known — write\n                  \"Size not confirmed\" if unknown]\nFormat         : [CSV / JSON / Parquet / images / audio / other]\nLicense        : [CC0 / CC BY 4.0 / MIT / GPL / Academic only]\nRegistration   : [Not required / Free account required / Approval needed]\n\nRelevance to research topic:\n  [2-3 sentences explaining specifically why this dataset supports\n   the research topic from Module 7. Be concrete about what variables\n   or features make it relevant.]\n\nGoogle Colab — implementation guide:\n  Step 1 Install : [!pip install library_name  OR  no install needed]\n  Step 2 Download: [kaggle datasets download ... OR requests.get(url) OR\n                    from datasets import load_dataset(\"name\")]\n  Step 3 Load    : [df = pd.read_csv(...) OR ds = load_dataset(...)]\n  Step 4 Preview : [df.head() OR print(ds)]\n\n  Estimated setup time: [under 5 minutes / 5-15 minutes / over 15 minutes]\n  Primary library: [pandas / sklearn / tensorflow / pytorch / transformers]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFINAL RANKING TABLE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nRank | Dataset Name | Platform | Access | Colab Setup | Best for\n\nRanking criterion: direct relevance to Module 7 topic + ease of Colab implementation\n\nANTI-HALLUCINATION RULES — strictly enforced:\n  NEVER fabricate: dataset names, record counts, feature names, or URLs\n  NEVER invent: a dataset that does not exist on the stated platform\n  URL rule: include URL only if you are certain it resolves correctly\n            otherwise write: \"Verify at: [platform]/search?q=[keyword]\"\n  Count rule: if fewer than 5 genuine datasets exist for this topic,\n              report the actual count and state:\n              \"Only [N] verified datasets found. Fabricating [5-N] more\n               would compromise research integrity.\"\n  Code rule: all Colab code is illustrative — always add comment:\n             \"# verify dataset name and path before running\"\n  Platform priority: Kaggle > Hugging Face > UCI > IEEE DataPort > Zenodo"}
+</script>
+<script type="application/json" id="scheme-data">
+[{"id": "pdp", "label": "PDP — Penelitian Dosen Pemula", "url": "https://bima.kemdiktisaintek.go.id/", "color": "#1a6e3a", "bg": "#e6f5ec", "bd": "#a3d9b8", "desc": "Hibah BIMA untuk dosen pemula. Luaran: artikel jurnal nasional terakreditasi SINTA 1-4."}, {"id": "pfr", "label": "PFR — Penelitian Fundamental Reguler", "url": "https://bima.kemdiktisaintek.go.id/", "color": "#0c447c", "bg": "#e6f1fb", "bd": "#85b7eb", "desc": "Hibah BIMA untuk penelitian fundamental. Luaran: artikel jurnal internasional Scopus."}, {"id": "prototype", "label": "Penelitian Terapan — Luaran Prototipe", "url": "https://bima.kemdiktisaintek.go.id/", "color": "#5c2a8a", "bg": "#f3eeff", "bd": "#c4a3e8", "desc": "Hibah BIMA terapan. Luaran: prototipe fungsional + HKI (paten/hak cipta)."}, {"id": "model", "label": "Penelitian Terapan — Luaran Model", "url": "https://bima.kemdiktisaintek.go.id/", "color": "#7a3500", "bg": "#fff3e8", "bd": "#ffc285", "desc": "Hibah BIMA terapan. Luaran: model konseptual/matematis + artikel."}, {"id": "brin", "label": "Hibah BRIN", "url": "https://www.brin.go.id/", "color": "#c43d11", "bg": "#fff0eb", "bd": "#f4a87a", "desc": "Hibah riset nasional BRIN. Luaran: riset dasar/terapan + kolaborasi lembaga."}, {"id": "scopus_q1", "label": "Artikel Scopus Q1", "url": "https://www.scopus.com/", "color": "#0f5e6e", "bg": "#e6f7fa", "bd": "#7dd4e0", "desc": "Target publikasi jurnal internasional Scopus Q1. Impact factor tinggi."}, {"id": "sinta2", "label": "Artikel SINTA 2", "url": "https://sinta.kemdiktisaintek.go.id/", "color": "#4a5800", "bg": "#f4f7e0", "bd": "#c2d16b", "desc": "Target publikasi jurnal nasional terakreditasi SINTA 2."}]
+</script>
+<div class="app">
+<header class="topbar">
+  <div class="logo"><div class="logo-icon">AL</div>
+    <div><div class="logo-text">Academic Literature Analysis System</div>
+    <div class="logo-sub">Core Layer v2.1 &mdash; M0&ndash;M9 &mdash; M8: IMRAD &mdash; M9: Dataset</div>
+    </div></div>
+  <div class="prog">
+    <div class="chip"><div class="dot" style="background:var(--gn)"></div><span id="cd">0</span>&nbsp;selesai</div>
+    <div class="chip"><div class="dot" style="background:var(--bl)"></div><span id="ca">0</span>&nbsp;berjalan</div>
+    <div class="chip"><div class="dot" style="background:var(--bd2)"></div><span id="ct">11</span>&nbsp;belum</div>
+    <button class="rbtn" onclick="resetAll()">&#8635; Reset</button>
+  </div>
+</header>
+<nav class="sidebar">
+  <div class="ns">Navigasi</div>
+  <div class="ni act" onclick="show('home')" id="nav-home">
+    <div class="nb" style="background:var(--pu-bg);color:var(--pu)">&#8962;</div>
+    <div class="ni-info"><div class="nl">Beranda</div><div class="nsub">Panduan &amp; ringkasan sistem</div></div>
+  </div>
+  <div class="ns">Fondasi</div>
+  <div class="ni" onclick="show('core')" id="nav-core">
+    <div class="nb" style="background:var(--pu-bg);color:var(--pu)">CL</div>
+    <div class="ni-info"><div class="nl">Core Layer</div><div class="nsub">v2.1 &mdash; TAK mode, auto-koreksi</div></div>
+    <div class="nst" id="ns-core" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ns">Pencarian Literatur</div>
+  <div class="ni" onclick="show('m0')" id="nav-m0">
+    <div class="nb" style="background:var(--am-bg);color:var(--am)">M0</div>
+    <div class="ni-info"><div class="nl">Modul 0 &mdash; Literature Search</div><div class="nsub">Jurnal saja &mdash; 4 tahun, 50% terkini</div></div>
+    <div class="nst" id="ns-m0" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ns">Analisis Literatur</div>
+  <div class="ni" onclick="show('m1')" id="nav-m1">
+    <div class="nb" style="background:var(--gn-bg);color:var(--gn)">M1</div>
+    <div class="ni-info"><div class="nl">Modul 1 &mdash; Intake Protocol</div><div class="nsub">Abstrak &rarr; auto-deteksi &rarr; analisis</div></div>
+    <div class="nst" id="ns-m1" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ni" onclick="show('m2')" id="nav-m2">
+    <div class="nb" style="background:var(--bl-bg);color:var(--bl)">M2</div>
+    <div class="ni-info"><div class="nl">Modul 2 &mdash; Contradiction Finder</div><div class="nsub">Kontradiksi genuine antar paper</div></div>
+    <div class="nst" id="ns-m2" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ni" onclick="show('m3')" id="nav-m3">
+    <div class="nb" style="background:#faece7;color:#712b13">M3</div>
+    <div class="ni-info"><div class="nl">Modul 3 &mdash; Citation Chain</div><div class="nsub">Genealogi konsep teoritis</div></div>
+    <div class="nst" id="ns-m3" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ni" onclick="show('m4')" id="nav-m4">
+    <div class="nb" style="background:#faeeda;color:#633806">M4</div>
+    <div class="ni-info"><div class="nl">Modul 4 &mdash; Gap Scanner</div><div class="nsub">5 research gap terranking</div></div>
+    <div class="nst" id="ns-m4" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ni" onclick="show('m5')" id="nav-m5">
+    <div class="nb" style="background:var(--gy-bg);color:var(--gy)">M5</div>
+    <div class="ni-info"><div class="nl">Modul 5 &mdash; Methodology Audit</div><div class="nsub">Evaluasi 4 kriteria metodologi</div></div>
+    <div class="nst" id="ns-m5" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ns">Pengembangan Penelitian</div>
+  <div class="ni" onclick="show('m6')" id="nav-m6">
+    <div class="nb" style="background:#e0f7f4;color:#0c5e58">M6</div>
+    <div class="ni-info"><div class="nl">Modul 6 &mdash; 10 Rekomendasi Judul</div><div class="nsub">Judul, novelty, flowchart, gap (1500 kata)</div></div>
+    <div class="nst" id="ns-m6" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ni" onclick="show('m7')" id="nav-m7">
+    <div class="nb" style="background:#fdeef1;color:#8c1a30">M7</div>
+    <div class="ni-info"><div class="nl">Modul 7 &mdash; Hibah &amp; Publikasi</div><div class="nsub">BIMA, BRIN, Scopus Q1, SINTA 2</div></div>
+    <div class="nst" id="ns-m7" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ni" onclick="show('m8')" id="nav-m8">
+    <div class="nb" style="background:#eef0ff;color:#2a34a8">M8</div>
+    <div class="ni-info"><div class="nl">Modul 8 &mdash; Template Artikel IMRAD</div><div class="nsub">Draft IMRAD: Scopus Q1 atau SINTA 2</div></div>
+    <div class="nst" id="ns-m8" style="background:var(--bd2)"></div>
+  </div>
+  <div class="ni" onclick="show('m9')" id="nav-m9">
+    <div class="nb" style="background:#f0f4f8;color:#2c4a63">M9</div>
+    <div class="ni-info"><div class="nl">Modul 9 &mdash; Rekomendasi Dataset</div><div class="nsub">5 dataset terverifikasi dari M7 untuk Colab</div></div>
+    <div class="nst" id="ns-m9" style="background:var(--bd2)"></div>
+  </div>
+  <div class="pip" id="pip"></div>
+</nav>
+<main class="main" id="main"></main>
+</div>
+<script>
+
+function renderM9DatasetSection(root){
+  /* Info banner M9 */
+  var banner = document.createElement('div');
+  banner.style.cssText = 'background:linear-gradient(135deg,#2c4a63 0%,#1a2f42 100%);border-radius:var(--rl);padding:14px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px';
+  var icon = document.createElement('div');
+  icon.style.cssText = 'font-size:20px;flex-shrink:0;margin-top:2px';
+  icon.textContent = '\uD83D\uDCC2';
+  var txt = document.createElement('div');
+  txt.style.cssText = 'font-size:12px;color:#d0e4f5;line-height:1.7';
+  txt.innerHTML = '<strong style="color:#fff;display:block;margin-bottom:4px">Dataset dari Konteks Modul 7</strong>'
+    + 'Modul 9 mencari 5 dataset yang relevan dan terverifikasi berdasarkan topik riset dari Modul 7. '
+    + 'Setiap dataset disertai panduan implementasi langkah demi langkah di Google Colab. '
+    + 'Tidak ada URL atau nama dataset yang difabrikasi \u2014 jika tidak yakin, AI akan memberikan panduan verifikasi manual.';
+  banner.appendChild(icon); banner.appendChild(txt); root.appendChild(banner);
+
+  /* Platform guide */
+  var guide = document.createElement('div');
+  guide.style.cssText = 'background:var(--surf);border:1px solid var(--bd);border-radius:var(--rl);padding:14px;margin-bottom:14px';
+  var gtitle = document.createElement('div');
+  gtitle.style.cssText = 'font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:10px';
+  gtitle.textContent = 'Platform Dataset Prioritas';
+  guide.appendChild(gtitle);
+
+  var platforms = [
+    {icon:'\uD83D\uDCC8',name:'Kaggle',url:'kaggle.com/datasets',
+     note:'Terluas dan termudah — kaggle CLI atau opendatasets'},
+    {icon:'\uD83E\uDD17',name:'Hugging Face',url:'huggingface.co/datasets',
+     note:'Terbaik untuk NLP/ML — satu baris load_dataset()'},
+    {icon:'\uD83C\uDFDB',name:'UCI ML Repository',url:'archive.ics.uci.edu',
+     note:'Klasik dan reliabel — ucimlrepo.fetch_ucirepo()'},
+    {icon:'\uD83D\uDCE1',name:'IEEE DataPort',url:'ieee-dataport.org',
+     note:'Engineering & IoT — memerlukan akun IEEE gratis'},
+    {icon:'\uD83D\uDCC3',name:'Zenodo',url:'zenodo.org',
+     note:'Multidisiplin — cocok untuk data hasil penelitian'}
+  ];
+
+  platforms.forEach(function(p, i){
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:6px 0;'+(i<platforms.length-1?'border-bottom:1px solid var(--bd)':'');
+    var ico = document.createElement('div');
+    ico.style.cssText = 'font-size:16px;flex-shrink:0;margin-top:2px'; ico.textContent = p.icon;
+    var info = document.createElement('div'); info.style.flex = '1';
+    var nm = document.createElement('div');
+    nm.style.cssText = 'font-size:12px;font-weight:600;color:var(--tx)'; nm.textContent = p.name;
+    var url = document.createElement('div');
+    url.style.cssText = 'font-size:10px;font-family:var(--mono);color:var(--tx3)'; url.textContent = p.url;
+    var note = document.createElement('div');
+    note.style.cssText = 'font-size:11px;color:var(--tx2);margin-top:2px'; note.textContent = p.note;
+    info.appendChild(nm); info.appendChild(url); info.appendChild(note);
+    row.appendChild(ico); row.appendChild(info); guide.appendChild(row);
+  });
+  root.appendChild(guide);
+
+  /* Anti-hallucination reminder */
+  var reminder = document.createElement('div');
+  reminder.style.cssText = 'background:var(--rd-bg);border:1px solid var(--rd-bd);border-radius:var(--r);padding:8px 12px;margin-bottom:12px;font-size:12px;color:#7a1a1a;line-height:1.6';
+  reminder.innerHTML = '<strong>\u26A0\uFE0F Aturan Anti-Halusinasi M9:</strong> AI hanya mencantumkan dataset yang benar-benar ada. '
+    + 'Jika URL tidak dapat dikonfirmasi, AI menulis panduan pencarian manual. '
+    + 'Jika kurang dari 5 dataset genuine ditemukan, AI melaporkan jumlah aktual \u2014 tidak memfabrikasi.';
+  root.appendChild(reminder);
+}
+
+
+var m8Scheme = m8Scheme || '';
+
+function onM8SchemeSelect(schemeId){
+  m8Scheme = schemeId;
+  var allCards = document.querySelectorAll('.imrad-card');
+  allCards.forEach(function(c){ c.className='imrad-card'; });
+  var sel = el('imrad-card-'+schemeId);
+  if(sel) sel.className = 'imrad-card ' + (schemeId==='scopus_q1'?'selected-q1':'selected-s2');
+  var st = el('imrad-scheme-status');
+  if(st){
+    st.className = 'imrad-status '+(schemeId==='scopus_q1'?'ok-q1':'ok-s2');
+    st.textContent = '\u2713 Skema dipilih: '+(schemeId==='scopus_q1'?'Artikel Scopus Q1 (English)':'Artikel SINTA 2 (Bahasa Indonesia)');
+  }
+  updateCopyBtn('m8-copy', !!(m8Topic.trim() && m8Scheme));
+  var pv = el('m8-live');
+  if(pv) updatePreviewBox('m8-live', buildTopicPrompt('m8', m8Topic, schemeId), m8Topic.trim());
+}
+
+function renderM8ImradSection(root){
+  /* Scheme selector */
+  var isb = ce('div','imrad-scheme-block');
+  var isl = ce('div','imrad-scheme-label'); isl.textContent='Pilih Target Publikasi'; isb.appendChild(isl);
+  var isd = ce('div','imrad-scheme-desc');
+  isd.textContent='Pilih satu skema. Template IMRAD akan disesuaikan dengan bahasa, gaya, dan standar jurnal target.';
+  isb.appendChild(isd);
+  var cards = ce('div','imrad-scheme-cards');
+
+  var schemeData = [
+    {id:'scopus_q1',icon:'\uD83C\uDF10',title:'Scopus Q1',
+     desc:'Artikel jurnal internasional bereputasi tinggi\nBahasa: English\nStyle: International research standard',
+     badge:'Impact factor tinggi',bc:'#185fa5',bbg:'#e6f1fb',bb:'#85b7eb'},
+    {id:'sinta2',icon:'\uD83C\uDDEE\uD83C\uDDE9',title:'SINTA 2',
+     desc:'Jurnal nasional terakreditasi SINTA 2\nBahasa: Bahasa Indonesia\nStyle: Standar jurnal nasional',
+     badge:'Terakreditasi nasional',bc:'#4a5800',bbg:'#f4f7e0',bb:'#c2d16b'}
+  ];
+
+  schemeData.forEach(function(sc){
+    var card = ce('div','imrad-card'+(m8Scheme===sc.id?(' '+(sc.id==='scopus_q1'?'selected-q1':'selected-s2')):''));
+    card.id = 'imrad-card-'+sc.id;
+    card.onclick = (function(sid){ return function(){ onM8SchemeSelect(sid); }; })(sc.id);
+    var ico = ce('div','imrad-card-icon'); ico.textContent = sc.icon; card.appendChild(ico);
+    var title = ce('div','imrad-card-title'); title.textContent = sc.title; card.appendChild(title);
+    var desc = ce('div','imrad-card-desc'); desc.textContent = sc.desc; card.appendChild(desc);
+    var badge = ce('div','imrad-card-badge'); badge.textContent = sc.badge;
+    badge.style.cssText = 'color:'+sc.bc+';border-color:'+sc.bb+';background:'+sc.bbg;
+    card.appendChild(badge);
+    cards.appendChild(card);
+  });
+  isb.appendChild(cards);
+
+  var ist = ce('div','imrad-status'); ist.id='imrad-scheme-status';
+  ist.textContent = m8Scheme ? '\u2713 Skema dipilih' : '\u26a0 Pilih skema Scopus Q1 atau SINTA 2';
+  isb.appendChild(ist); root.appendChild(isb);
+
+  /* IMRAD sections overview */
+  var iss = ce('div','imrad-sections');
+  var issl = ce('div','imrad-sec-title'); issl.textContent='Struktur Output IMRAD (6 pernyataan per seksi)'; iss.appendChild(issl);
+  [
+    {l:'I',name:'Introduction / Pendahuluan',desc:'Latar belakang, rumusan masalah, tujuan penelitian',bg:'#e1f5ee',tx:'#085041'},
+    {l:'M',name:'Methods / Metode',desc:'Desain, alat, prosedur, teknik analisis, validasi',bg:'#e6f1fb',tx:'#0c447c'},
+    {l:'R',name:'Results / Hasil',desc:'Temuan penelitian objektif, data, pola, perbandingan',bg:'#faeeda',tx:'#633806'},
+    {l:'D',name:'Discussion / Pembahasan',desc:'Interpretasi, perbandingan literatur, implikasi, limitasi',bg:'#fcebeb',tx:'#a32d2d'}
+  ].forEach(function(s){
+    var row = ce('div','imrad-sec-row');
+    var badge = ce('div','imrad-sec-badge'); badge.textContent=s.l;
+    badge.style.cssText='background:'+s.bg+';color:'+s.tx;
+    row.appendChild(badge);
+    var info = ce('div','imrad-sec-info');
+    var nm = ce('div','imrad-sec-name'); nm.textContent=s.name+'  (6 pernyataan, ~375 kata)'; info.appendChild(nm);
+    var ds = ce('div','imrad-sec-desc'); ds.textContent=s.desc; info.appendChild(ds);
+    row.appendChild(info); iss.appendChild(row);
+  });
+  root.appendChild(iss);
+}
+
+function renderM0YearFormula(root){
+  var yr = new Date().getFullYear();
+  var start = yr - 3;
+  var yf = ce('div','year-formula');
+  var lbl = ce('strong'); lbl.textContent='Formula Distribusi Tahun (Otomatis)'; yf.appendChild(lbl);
+  var desc = document.createElement('div');
+  desc.innerHTML = 'Range: <span class="year-pill pill-prior">'+start+'</span>'
+    + '<span class="year-pill pill-prior">'+(start+1)+'</span>'
+    + '<span class="year-pill pill-prior">'+(start+2)+'</span>'
+    + '<span class="year-pill pill-current">'+yr+' (50%)</span>'
+    + '<br>Target: <strong>5 artikel dari '+yr+'</strong> + 5 artikel dari '+start+'\u2013'+(yr-1);
+  yf.appendChild(desc); root.appendChild(yf);
+}
+
+var M8_SCHEMES = [{"id": "scopus_q1", "label": "Artikel Scopus Q1", "url": "https://www.scopus.com/", "color": "#0f5e6e", "bg": "#e6f7fa", "bd": "#7dd4e0", "desc": "Target publikasi jurnal internasional Scopus Q1. Impact factor tinggi."}, {"id": "sinta2", "label": "Artikel SINTA 2", "url": "https://sinta.kemdiktisaintek.go.id/", "color": "#4a5800", "bg": "#f4f7e0", "bd": "#c2d16b", "desc": "Target publikasi jurnal nasional terakreditasi SINTA 2."}];
+
+function renderM0SourceFilter(root){
+  /* Auto-detect banner */
+  var adb = document.createElement('div');
+  adb.className = 'auto-detect-banner';
+  var adi = document.createElement('div');
+  adi.className = 'ad-icon'; adi.textContent = '\u26A1';
+  var adt = document.createElement('div');
+  adt.className = 'ad-text';
+  adt.innerHTML = '<strong>Auto-Deteksi Aktif (Core Layer v2.0)</strong><br>'
+    + 'Setelah Anda mengisi template dan mengirimnya ke AI, Core Layer akan '
+    + '<strong>otomatis mendeteksi blok paper yang sudah diisi</strong> dan langsung '
+    + 'menjalankan Module 1 tanpa perintah tambahan. Tidak perlu mengetik ACTIVATE: MODULE 1.';
+  adb.appendChild(adi); adb.appendChild(adt);
+  root.appendChild(adb);
+
+  /* Source filter */
+  var sf = document.createElement('div');
+  sf.className = 'source-filter';
+  var sft = document.createElement('div');
+  sft.className = 'sf-title';
+  sft.textContent = 'Filter Sumber — Hanya Artikel Jurnal Penelitian';
+  sf.appendChild(sft);
+
+  var grid = document.createElement('div');
+  grid.className = 'sf-grid';
+
+  /* OK sources */
+  var ok_card = document.createElement('div');
+  ok_card.className = 'sf-card sf-ok';
+  var ok_title = document.createElement('div');
+  ok_title.className = 'sf-card-title';
+  ok_title.innerHTML = '\u2713 Sumber yang DIGUNAKAN';
+  ok_card.appendChild(ok_title);
+  [
+    'ScienceDirect — artikel jurnal Elsevier',
+    'IEEE Xplore — IEEE Transactions & Journals',
+    'Scopus — filter SRCTYPE=j (journals)',
+    'PubMed — jurnal biomedis & life science',
+    'SpringerLink — jurnal Springer'
+  ].forEach(function(item){
+    var d = document.createElement('div');
+    d.className = 'sf-item';
+    d.innerHTML = '\u2022 ' + item;
+    ok_card.appendChild(d);
+  });
+  grid.appendChild(ok_card);
+
+  /* Excluded sources */
+  var no_card = document.createElement('div');
+  no_card.className = 'sf-card sf-no';
+  var no_title = document.createElement('div');
+  no_title.className = 'sf-card-title';
+  no_title.innerHTML = '\u2717 Sumber yang DIKECUALIKAN';
+  no_card.appendChild(no_title);
+  [
+    'Consensus.app — agregat konferensi & SLR',
+    'Prosiding konferensi (IEEE Conf, ICML, dll)',
+    'Systematic Literature Review orang lain',
+    'Preprint (arXiv, bioRxiv, SSRN)',
+    'Bab buku, editorial, laporan teknis'
+  ].forEach(function(item){
+    var d = document.createElement('div');
+    d.className = 'sf-item';
+    d.innerHTML = '\u2022 ' + item;
+    no_card.appendChild(d);
+  });
+  grid.appendChild(no_card);
+
+  sf.appendChild(grid);
+  root.appendChild(sf);
+}
+
+
+function renderCoreLayerPanel(root){
+  /* v2.0 banner */
+  var banner = document.createElement('div');
+  banner.className = 'v2-banner';
+
+  var trow = document.createElement('div');
+  trow.className = 'v2-title';
+  var ttext = document.createElement('span');
+  ttext.textContent = 'Core Layer v2.0';
+  var tbadge = document.createElement('span');
+  tbadge.className = 'v2-badge';
+  tbadge.textContent = 'DIPERBARUI';
+  trow.appendChild(ttext); trow.appendChild(tbadge);
+  banner.appendChild(trow);
+
+  var sub = document.createElement('div');
+  sub.className = 'v2-sub';
+  sub.textContent = '9 seksi \u2014 TAK mode (tanpa PDF) \u2014 auto-koreksi \u2014 5 quality gates \u2014 10 modul registry \u2014 kompatibel semua AI';
+  banner.appendChild(sub);
+
+  var grid = document.createElement('div');
+  grid.className = 'improvements-grid';
+
+  var imps = [
+    {n:'Perbaikan 1',t:'Platform-Agnostic Format',
+     d:'Semua markdown syntax dihapus. Tidak ada backtick, bold, atau tabel markdown. Bekerja identik di ChatGPT, Claude, Gemini, Grok, dan Copilot.',
+     tag:'FIX',cls:'tag-fix'},
+    {n:'Perbaikan 2',t:'Registry 10 Modul Lengkap',
+     d:'Modul 6, 7, dan 8 kini terdaftar di registry dengan dependency order eksplisit dan mode input masing-masing.',
+     tag:'UPDATE',cls:'tag-upd'},
+    {n:'Perbaikan 3',t:'TAK Mode & 6 Epistemic Markers',
+     d:'Mode Title+Abstract+Keywords dideklarasikan eksplisit. Enam marker baru: [Abstract-based], [Needs full-text], [Not stated in abstract] dan tiga lainnya.',
+     tag:'NEW',cls:'tag-new'},
+    {n:'Perbaikan 4',t:'Auto-Progressive Improvement',
+     d:'Section G baru berisi: intra-response self-review, cross-module consistency rules, progressive depth protocol, dan 5 quality gates wajib.',
+     tag:'NEW',cls:'tag-new'},
+    {n:'Perbaikan 5',t:'Session Continuity Rules',
+     d:'Paper numbering permanen, cluster names konsisten antar modul, cross-module contradiction tracking, dan clarification protocol dengan default assumption.',
+     tag:'NEW',cls:'tag-new'}
+  ];
+
+  imps.forEach(function(imp){
+    var card = document.createElement('div');
+    card.className = 'imp-card';
+    var num = document.createElement('div');
+    num.className = 'imp-num'; num.textContent = imp.n; card.appendChild(num);
+    var title = document.createElement('div');
+    title.className = 'imp-title'; title.textContent = imp.t; card.appendChild(title);
+    var desc = document.createElement('div');
+    desc.className = 'imp-desc'; desc.textContent = imp.d; card.appendChild(desc);
+    var tag = document.createElement('span');
+    tag.className = 'imp-tag '+imp.cls; tag.textContent = imp.tag; card.appendChild(tag);
+    grid.appendChild(card);
+  });
+
+  banner.appendChild(grid);
+  root.appendChild(banner);
+}
+
+
+/* ===== M1 TEMPLATE HELPER ===== */
+var M1_BLANK_TEMPLATE = "=== CORPUS INPUT FOR MODULE 1 ===\n\n--- PAPER 1 ---\nTITLE     : \nAUTHORS   : \nYEAR      : \nJOURNAL   : \nKEYWORDS  : \nABSTRACT  : \nDOI       : \nSOURCE    : \n\n--- PAPER 2 ---\nTITLE     : \nAUTHORS   : \nYEAR      : \nJOURNAL   : \nKEYWORDS  : \nABSTRACT  : \nDOI       : \nSOURCE    : \n\n--- PAPER 3 ---\nTITLE     : \nAUTHORS   : \nYEAR      : \nJOURNAL   : \nKEYWORDS  : \nABSTRACT  : \nDOI       : \nSOURCE    : \n\n=== END OF CORPUS INPUT ===\n\nACTIVATE: MODULE 1";
+
+function renderM1TemplateSection(root){
+  /* Abstract mode banner */
+  var amb = document.createElement('div');
+  amb.className = 'abstract-mode';
+  var amico = document.createElement('div');
+  amico.className = 'am-icon'; amico.textContent = '\uD83D\uDCDD';
+  var amtxt = document.createElement('div');
+  amtxt.className = 'am-text';
+  amtxt.innerHTML = 'Mode Analisis: <strong>Judul + Abstrak + Keyword</strong>'
+    + '<span class="am-badge">Tanpa Upload PDF</span>'
+    + '<br>Tidak perlu download atau upload PDF. Cukup copy judul, abstrak, dan keyword dari database, paste ke template di bawah, lalu kirim ke AI.';
+  amb.appendChild(amico); amb.appendChild(amtxt); root.appendChild(amb);
+
+  /* Cara pakai */
+  var how = document.createElement('div');
+  how.style.cssText = 'background:var(--surf);border:1px solid var(--bd);border-radius:var(--rl);padding:14px;margin-bottom:14px';
+  var htitle = document.createElement('div');
+  htitle.style.cssText = 'font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:10px';
+  htitle.textContent = 'Cara Menggunakan Modul 1 (Tanpa PDF)';
+  how.appendChild(htitle);
+  var steps = [
+    ['1','Jalankan Modul 0 terlebih dahulu untuk mendapat daftar 10 artikel.'],
+    ['2','Buka setiap artikel di Consensus, ScienceDirect, atau IEEE Xplore.'],
+    ['3','Copy Judul, Abstrak, dan Keywords dari halaman artikel.'],
+    ['4','Paste ke masing-masing field di template di bawah.'],
+    ['5','Kirim template yang sudah diisi ke AI dengan perintah ACTIVATE: MODULE 1.']
+  ];
+  steps.forEach(function(s){
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--bd)';
+    var n = document.createElement('div');
+    n.style.cssText = 'width:20px;height:20px;border-radius:50%;background:var(--gn-bg);border:1px solid var(--gn-bd);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--gn);flex-shrink:0;margin-top:1px';
+    n.textContent = s[0];
+    var t = document.createElement('div');
+    t.style.cssText = 'font-size:12px;color:var(--tx2);line-height:1.5';
+    t.textContent = s[1];
+    row.appendChild(n); row.appendChild(t); how.appendChild(row);
+  });
+  root.appendChild(how);
+
+  /* Template display */
+  var tlbl = document.createElement('div');
+  tlbl.style.cssText = 'font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:6px';
+  tlbl.textContent = 'Template Input (isi dari database, paste ke AI)';
+  root.appendChild(tlbl);
+
+  var tbox = document.createElement('div');
+  tbox.className = 'template-box';
+  tbox.textContent = M1_BLANK_TEMPLATE;
+  root.appendChild(tbox);
+
+  var tcopy = document.createElement('button');
+  tcopy.className = 'copy-tpl-btn';
+  tcopy.id = 'copy-tpl-btn';
+  tcopy.innerHTML = '\uD83D\uDCCB Copy Template Kosong';
+  tcopy.onclick = function(){
+    copyText(M1_BLANK_TEMPLATE, 'copy-tpl-btn');
+  };
+  root.appendChild(tcopy);
+
+  /* Limitation note */
+  var lnote = document.createElement('div');
+  lnote.className = 'limitation-note';
+  lnote.innerHTML = '<strong>\u26A0\uFE0F Catatan Keterbatasan:</strong> Analisis berbasis abstrak memiliki keterbatasan pada detail metodologi, ukuran sampel, dan temuan internal. Setiap klaim yang berasal dari abstrak akan diberi penanda <code>[Abstract-based]</code> oleh AI. Untuk sitasi akademik formal, verifikasi ke full-text tetap direkomendasikan.';
+  root.appendChild(lnote);
+}
+/* ================================ */
+
+
+/* ============================================================
+   OBFUSCATION ENGINE v1.0
+   ============================================================ */
+var OBF = (function(){
+  var SYN = {
+    'analyze':['examine','assess','evaluate','investigate'],
+    'analyse':['examine','assess','evaluate','investigate'],
+    'provide':['generate','produce','deliver','present'],
+    'identify':['detect','locate','find','determine'],
+    'ensure':['verify','confirm','validate','check'],
+    'mandatory':['required','obligatory','compulsory'],
+    'strict':['rigorous','precise','stringent'],
+    'complete':['full','comprehensive','thorough'],
+    'relevant':['applicable','pertinent','appropriate'],
+    'structured':['organized','systematic','ordered'],
+    'significant':['important','notable','substantial'],
+    'search':['find','locate','retrieve'],
+    'report':['state','declare','document'],
+    'include':['incorporate','contain','cover'],
+    'perform':['execute','carry out','conduct'],
+    'produce':['generate','create','yield'],
+    'clearly':['explicitly','precisely','specifically'],
+    'require':['necessitate','demand','need'],
+    'papers':['articles','studies','publications'],
+    'genuine':['authentic','real','actual','legitimate'],
+    'corpus':['collection','literature set','paper set'],
+    'across':['throughout','among','within'],
+    'output':['result','response','findings'],
+    'using':['employing','utilizing','applying'],
+    'based on':['drawing from','grounded in','derived from'],
+    'task':['objective','goal','assignment'],
+    'show':['display','present','illustrate'],
+    'list':['enumerate','outline','catalog'],
+    'explain':['describe','elaborate','detail'],
+    'describe':['explain','outline','detail'],
+    'extract':['retrieve','obtain','derive'],
+    'compare':['contrast','evaluate','juxtapose'],
+    'highlight':['emphasize','indicate','mark'],
+    'confirm':['verify','validate','affirm'],
+    'upload':['provide','submit','share'],
+    'note':['observe','record','indicate'],
+  };
+
+  var PROTECTED = [
+    /ACTIVATE\s*:/i,
+    /KEYWORD\s*:/i,
+    /TOPIC\s*:/i,
+    /SELECTED_SCHEME\s*:/i,
+    /\[KEYWORD_INPUT\]/,
+    /\[TOPIC_INPUT\]/,
+    /\[SCHEME_INPUT\]/,
+    /\[Author[,\s]/i,
+    /\[Not stated/i,
+    /\[Analysis\]/i,
+    /\[Stated/i,
+    /\[Implied/i,
+    /\[KODE\]/,
+    /\[SID:/,
+    /D\.[1-4]/,
+    /https?:\/\//,
+    /STEP\s+\d+/i,
+    /MODULE\s+\d+/i,
+    /Scopus/i,
+    /SINTA/i,
+    /BIMA/i,
+    /BRIN/i,
+    /IEEE/,
+    /DOI/i,
+    /[QP][1-4]/,
+    /\u2501+/,
+    /\u2550+/,
+    /^#{1,6}\s/,
+  ];
+
+  function isProtected(line){
+    for(var i=0;i<PROTECTED.length;i++) if(PROTECTED[i].test(line)) return true;
+    return false;
+  }
+  function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
+  function chance(p){return Math.random()<p;}
+
+  function obfLine(line, prob){
+    if(!line||!line.trim()) return line;
+    if(isProtected(line)) return line;
+    if(/^[*\-=_]{3,}/.test(line.trim())) return line;
+    var words=line.split(' '), result=[], i=0;
+    while(i<words.length){
+      var w=words[i];
+      if(i+1<words.length){
+        var bg=(w+' '+words[i+1]).toLowerCase().replace(/[.,;:!?]$/,'');
+        if(SYN[bg]&&chance(prob)){
+          var oc=/^[A-Z]/.test(w), syn=rand(SYN[bg]);
+          result.push(oc?syn.charAt(0).toUpperCase()+syn.slice(1):syn);
+          i+=2; continue;
+        }
+      }
+      var wl=w.toLowerCase().replace(/[.,;:!?]$/,'');
+      var pt=w.slice(wl.length);
+      if(SYN[wl]&&chance(prob)&&!isProtected(w)){
+        var oc2=/^[A-Z]/.test(w), syn2=rand(SYN[wl]);
+        result.push((oc2?syn2.charAt(0).toUpperCase()+syn2.slice(1):syn2)+pt);
+      } else result.push(w);
+      i++;
+    }
+    return result.join(' ');
+  }
+
+  function genToken(sessionCode){
+    var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', uid='';
+    for(var i=0;i<5;i++) uid+=c.charAt(Math.floor(Math.random()*c.length));
+    var ver=Math.floor(Math.random()*9000)+1000;
+    return '[SID:'+sessionCode+'-'+uid+'-'+ver+']';
+  }
+
+  function obfuscate(text, sessionCode, strength){
+    var prob = strength==='high'?0.70:strength==='low'?0.35:0.55;
+    var token = genToken(sessionCode||'XXX');
+    var lines = text.split('\n');
+    var result = [], injected=false;
+    for(var i=0;i<lines.length;i++){
+      result.push(obfLine(lines[i], prob));
+      if(!injected && lines[i].trim()==='' && i>0 && i<3){
+        result.push(token);
+        injected=true;
+      }
+    }
+    if(!injected) result.splice(1,0,token);
+    return result.join('\n');
+  }
+
+  return {obfuscate:obfuscate, genToken:genToken};
+})();
+
+/* Obfuscation state */
+var obfEnabled = true;
+var obfStrength = 'medium';
+
+function setObfEnabled(val){
+  obfEnabled=val;
+  var badge=el('obf-global-badge');
+  if(badge){
+    badge.className=val?'obf-badge':'obf-badge off';
+    badge.textContent=val?'\u{1F512} Aktif':'\u{1F513} Nonaktif';
+  }
+}
+function setObfStrength(val){obfStrength=val;}
+
+function getObfuscatedText(rawText){
+  if(!obfEnabled) return rawText;
+  return OBF.obfuscate(rawText, SESSION_CODE, obfStrength);
+}
+
+function regenerateObfToken(){
+  var disp=el('obf-token-display');
+  if(disp) disp.textContent=OBF.genToken(SESSION_CODE);
+}
+
+
+var MODULES=[
+  {id:'core',code:'CL',name:'Core Layer',sname:'Core Layer \u2014 Fondasi Sistem',
+   desc:'Fondasi sistem v2.0 — 9 seksi, TAK mode, auto-koreksi, 5 quality gates, 10 modul registry',
+   pos:'Wajib \u2014 paste PERTAMA sebelum modul apapun di semua AI (ChatGPT, Claude, Gemini, Grok)',prereq:null,color:'pu',
+   out:['Identitas & peran AI aktif','Protokol bahasa adaptif 5-langkah','TAK mode tanpa PDF dideklarasikan','6 epistemic markers aktif','5 aturan anti-halusinasi (E.1\u2013E.5)','Auto-koreksi & 5 quality gates','Registry 10 modul lengkap','Progressive depth protocol'],
+   wf:'Paste ke AI terlebih dahulu. Sistem akan konfirmasi dengan SYSTEM INITIALIZED dan menampilkan 4 pilihan aksi pertama.'},
+  {id:'m0',code:'M0',name:'Modul 0',sname:'Modul 0 \u2014 Literature Search',
+   desc:'Mencari 10 artikel jurnal peer-reviewed (bukan prosiding/konferensi/SLR) dari ScienceDirect, IEEE Journals, Scopus, PubMed',
+   pos:'Opsional \u2014 gunakan jika belum punya korpus paper',prereq:'Core Layer harus aktif.',color:'am',
+   out:['Tabel 10 artikel terverifikasi','Status OA dan kuartil Scopus','DOI terverifikasi atau flagged'],
+   wf:'1. Ketik keyword \u2192 copy \u2192 paste ke AI. 2. AI generate tabel artikel jurnal (bukan konferensi) + template 10 blok. 3. Buka tiap artikel, copy judul+abstrak+keyword. 4. Paste blok yang sudah diisi ke AI \u2014 Core Layer auto-deteksi dan langsung jalankan Module 1.'},
+  {id:'m1',code:'M1',name:'Modul 1',sname:'Modul 1 \u2014 Intake Protocol',
+   desc:'Pemetaan awal seluruh korpus: inventaris, klasterisasi teoritis, flag kontradiksi',
+   pos:'Auto-dijalankan oleh Core Layer saat blok paper terdeteksi',prereq:'Core Layer v2.0 wajib aktif. Isi template dari M0, paste ke AI \u2014 M1 jalan otomatis.',color:'gn',
+   out:['Tabel inventaris paper','Peta kluster teoritis','Daftar flag kontradiksi','Completion report'],
+   wf:'Upload paper \u2192 M1 \u2192 review \u2192 lanjut M2, M3, M4, atau M5.'},
+  {id:'m2',code:'M2',name:'Modul 2',sname:'Modul 2 \u2014 Contradiction Finder',
+   desc:'Kontradiksi genuine antar paper beserta akar penyebabnya',
+   pos:'Opsional \u2014 setelah Modul 1',prereq:'Core Layer + Modul 1 selesai.',color:'bl',
+   out:['Tabel kontradiksi genuine','Klasifikasi root cause','Near-misses section','Narasi resolusi'],
+   wf:'Setelah M1 \u2192 M2 (paralel M3) \u2192 output ke M4 dan M5.'},
+  {id:'m3',code:'M3',name:'Modul 3',sname:'Modul 3 \u2014 Citation Chain',
+   desc:'Genealogi intelektual 3 konsep terpenting: origin, challengers, refinements',
+   pos:'Opsional \u2014 paralel Modul 2',prereq:'Core Layer + Modul 1 selesai.',color:'co',
+   out:['Tabel frekuensi konsep','3 genealogi terstruktur','Status teoritis','Analisis kematangan'],
+   wf:'Setelah M1 \u2192 M3 (paralel M2) \u2192 output ke M4.'},
+  {id:'m4',code:'M4',name:'Modul 4',sname:'Modul 4 \u2014 Gap Scanner',
+   desc:'5 research gap terranking beserta jalur resolusinya',
+   pos:'Opsional \u2014 akurasi tertinggi setelah M1\u20133',prereq:'Modul 1 wajib. M2 dan M3 direkomendasikan.',color:'am2',
+   out:['5 profil gap','Tabel ranking gap','Narasi gap prioritas','Analisis interkoneksi'],
+   wf:'Setelah M1\u20133 \u2192 M4 \u2192 output ke bab gap penelitian.'},
+  {id:'m5',code:'M5',name:'Modul 5',sname:'Modul 5 \u2014 Methodology Audit',
+   desc:'Klasifikasi metodologi seluruh korpus dan evaluasi 4 kriteria standar',
+   pos:'Modul terakhir analisis \u2014 validator seluruh sesi',prereq:'Modul 1 wajib. M2\u20134 direkomendasikan.',color:'gy',
+   out:['Tabel klasifikasi metodologi','Narasi sintesis','Evaluasi 4 kriteria','Verdict + rekomendasi','Laporan penutup'],
+   wf:'Jalankan terakhir \u2192 laporan penutup merangkum seluruh sesi.'},
+  {id:'m6',code:'M6',name:'Modul 6',sname:'Modul 6 \u2014 10 Rekomendasi Judul',
+   desc:'10 rekomendasi judul penelitian lengkap: latar belakang, novelty, flowchart, gap (1500 kata/judul)',
+   pos:'Lanjutan \u2014 setelah Modul 1\u20135',prereq:'Analisis Modul 1\u20135 harus selesai untuk hasil optimal.',color:'teal',
+   out:['10 rekomendasi judul','Latar belakang per judul','2 novelty per judul','Flowchart desain penelitian','Gap penelitian per judul'],
+   wf:'Ketik topik riset \u2192 prompt otomatis \u2192 copy \u2192 paste ke AI.'},
+  {id:'m7',code:'M7',name:'Modul 7',sname:'Modul 7 \u2014 Rekomendasi Hibah & Publikasi',
+   desc:'3 rekomendasi berimpact tinggi untuk skema hibah BIMA, BRIN, atau publikasi Scopus/SINTA 2',
+   pos:'Lanjutan \u2014 setelah Modul 6',prereq:'Modul 6 harus selesai. Pilih skema target.',color:'rose',
+   out:['3 rekomendasi terpilih berimpact tinggi','Alasan kesesuaian per skema','Desain penelitian per skema','Target luaran spesifik','Estimasi anggaran & timeline'],
+   wf:'Ketik topik + pilih skema hibah/publikasi \u2192 copy \u2192 paste ke AI.'},
+  {id:'m8',code:'M8',name:'Modul 8',sname:'Modul 8 \u2014 Template Artikel IMRAD',
+   desc:'Draft artikel IMRAD 1500 kata (4 seksi, 6 pernyataan per seksi) untuk target Scopus Q1 atau SINTA 2',
+   pos:'Lanjutan \u2014 setelah Modul 7',prereq:'Modul 7 harus selesai. Pilih skema: Scopus Q1 atau SINTA 2.',color:'indigo',
+   out:['Seksi I: Introduction (6 pernyataan)','Seksi M: Methods (6 pernyataan)','Seksi R: Results (6 pernyataan)','Seksi D: Discussion (6 pernyataan)','Total \u00b11500 kata paragraf penuh','Heading terstruktur per skema target'],
+   wf:'Ketik topik + pilih skema (Q1 atau SINTA 2) \u2192 copy \u2192 paste ke AI.'},
+  {id:'m9',code:'M9',name:'Modul 9',sname:'Modul 9 — Rekomendasi Dataset',
+   desc:'5 dataset relevan, terverifikasi, dan mudah diimplementasikan di Google Colab berdasarkan topik M7',
+   pos:'Lanjutan — setelah Modul 7',prereq:'Modul 7 harus selesai. Topik dari M7.',color:'slate',
+   out:['5 dataset terverifikasi publik','URL akses atau panduan verifikasi','Format, lisensi, registrasi','Kode loading Colab','Ranking 5 dataset per kemudahan implementasi'],
+   wf:'Ketik topik dari M7 → copy → paste ke AI. Dataset dicari berdasarkan rekomendasi M7.'}
+];
+
+var COLORS={
+  pu:{bg:'var(--pu-bg)',bd:'var(--pu-bd)',tx:'var(--pu)'},
+  am:{bg:'var(--am-bg)',bd:'var(--am-bd)',tx:'var(--am)'},
+  gn:{bg:'var(--gn-bg)',bd:'var(--gn-bd)',tx:'var(--gn)'},
+  bl:{bg:'var(--bl-bg)',bd:'var(--bl-bd)',tx:'var(--bl)'},
+  co:{bg:'#faece7',bd:'#f0997b',tx:'#712b13'},
+  am2:{bg:'#faeeda',bd:'#fac775',tx:'#633806'},
+  gy:{bg:'var(--gy-bg)',bd:'var(--gy-bd)',tx:'var(--gy)'},
+  teal:{bg:'#e0f7f4',bd:'#5cc8bc',tx:'#0c5e58'},
+  rose:{bg:'#fdeef1',bd:'#f09aaa',tx:'#8c1a30'},
+  indigo:{bg:'#eef0ff',bd:'#9da8f0',tx:'#2a34a8'},
+  slate:{bg:'#f0f4f8',bd:'#90a4b8',tx:'#2c4a63'}
+};
+
+function sc(s){
+  if(s==='done')  return{bg:'var(--gn-bg)',bd:'var(--gn)',tx:'var(--gn)',lbl:'Selesai'};
+  if(s==='active')return{bg:'var(--bl-bg)',bd:'var(--bl)',tx:'var(--bl)',lbl:'Berjalan'};
+  return{bg:'var(--gy-bg)',bd:'var(--gy-bd)',tx:'var(--gy)',lbl:'Belum dilakukan'};
+}
+
+var PROMPTS={};
+var SCHEMES=[];
+var states={};
+var cur='home';
+var SESSION_CODE='';
+var m0Keyword='';
+var m6Topic='';
+var m7Topic='';
+var m7Scheme='';
+var m8Topic='';
+var m8Scheme='';
+var m9Topic='';
+
+MODULES.forEach(function(m){states[m.id]='todo';});
+
+function el(id){return document.getElementById(id);}
+function ce(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;}
+
+function genCode(){
+  var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',r='';
+  for(var i=0;i<3;i++)r+=c.charAt(Math.floor(Math.random()*c.length));
+  return r;
+}
+function newCode(){
+  SESSION_CODE=genCode();
+  var cv=el('code-val');if(cv)cv.textContent=SESSION_CODE;
+  var e1=el('eg1');if(e1)e1.textContent='['+SESSION_CODE+'] \u2014 Tabel Inventaris Paper';
+  var e2=el('eg2');if(e2)e2.textContent='['+SESSION_CODE+'] \u2014 Kluster Teoritis';
+}
+function buildOpenerText(){return(PROMPTS['opener']||'').replace(/\[KODE\]/g,SESSION_CODE);}
+
+/* Generic topic-based prompt builder */
+function buildTopicPrompt(modId,topic,extra){
+  var tmpl=PROMPTS[modId]||'';
+  var t=topic&&topic.trim()?topic.trim():'[isi topik riset Anda]';
+  var result=tmpl.replace(/\[TOPIC_INPUT\]/g,t);
+  if(extra)result=result.replace(/\[SCHEME_INPUT\]/g,extra);
+  return result;
+}
+
+/* M0 */
+function buildM0Prompt(kw){
+  var tmpl=PROMPTS['m0']||'';
+  var k=kw&&kw.trim()?kw.trim():'[isi kata kunci riset Anda]';
+  return tmpl.replace(/\[KEYWORD_INPUT\]/g,k);
+}
+function onKeywordInput(val){m0Keyword=val;updateDynPreview('m0','m0-live','cpbtn-m0','kw-status-msg',val);}
+function copyM0Prompt(){
+  if(!m0Keyword.trim()){flashEmpty('kw-input','kw-status-msg','Keyword kosong!');return;}
+  copyTextObf(buildM0Prompt(m0Keyword),'cpbtn-m0');
+}
+
+/* Generic dynamic input handlers */
+function onTopicInput(modId,val){
+  if(modId==='m6')m6Topic=val;
+  else if(modId==='m7')m7Topic=val;
+  else if(modId==='m8')m8Topic=val;
+  else if(modId==='m9')m9Topic=val;
+  var extra=(modId==='m7')?m7Scheme:'';
+  var prompt=buildTopicPrompt(modId,val,extra);
+  updatePreviewBox(modId+'-live',prompt,val.trim());
+  updateStatusMsg(modId+'-status',val.trim());
+  updateCopyBtn(modId+'-copy',!!(val.trim()&&(modId!=='m7'||m7Scheme)));
+}
+
+function onSchemeSelect(schemeId){
+  m7Scheme=schemeId;
+  var prompt=buildTopicPrompt('m7',m7Topic,m7Scheme);
+  updatePreviewBox('m7-live',prompt,m7Topic.trim());
+  updateCopyBtn('m7-copy',!!(m7Topic.trim()&&m7Scheme));
+  var ss=el('scheme-status');
+  if(ss){
+    var sc2=SCHEMES.find(function(s){return s.id===schemeId;});
+    ss.className='scheme-status ok';
+    ss.textContent='\u2713 Skema dipilih: '+(sc2?sc2.label:schemeId);
+  }
+  SCHEMES.forEach(function(s){
+    var card=el('scheme-card-'+s.id);
+    var radio=el('scheme-radio-'+s.id);
+    if(card&&radio){
+      var sel=s.id===schemeId;
+      card.style.borderColor=sel?s.color:null;
+      card.style.background=sel?s.bg:null;
+      radio.style.borderColor=sel?s.color:'var(--bd2)';
+      radio.style.color=s.color;
+      if(sel){radio.innerHTML='<div style="width:7px;height:7px;border-radius:50%;background:'+s.color+'"></div>';}
+      else{radio.innerHTML='';}
+    }
+  });
+}
+
+function copyTopicPrompt(modId){
+  var topic=modId==='m6'?m6Topic:modId==='m7'?m7Topic:modId==='m8'?m8Topic:m9Topic;
+  if(!topic.trim()){flashEmpty(modId+'-input',modId+'-status','Topik kosong!');return;}
+  if(modId==='m8'&&!m8Scheme){
+    var ss8=el('m8-scheme-status');if(ss8){ss8.className='scheme-status';ss8.textContent='\u26a0 Pilih skema terlebih dahulu!';}
+    return;
+  }
+  if(modId==='m7'&&!m7Scheme){
+    var ss=el('scheme-status');if(ss){ss.className='scheme-status';ss.textContent='\u26a0 Pilih skema terlebih dahulu!';}return;
+  }
+  var extra=modId==='m7'?m7Scheme:modId==='m8'?m8Scheme:'';
+  var schemeLabel='';
+  if(modId==='m7'&&m7Scheme){var sc3=SCHEMES.find(function(s){return s.id===m7Scheme;});if(sc3)schemeLabel=sc3.label;}
+  if(modId==='m8'&&m8Scheme){var sc3b=M8_SCHEMES.find(function(s){return s.id===m8Scheme;});if(sc3b)schemeLabel=sc3b.label;}
+  var prompt=buildTopicPrompt(modId,topic,schemeLabel||extra);
+  copyTextObf(prompt,modId+'-copy');
+}
+
+function updateDynPreview(modId,previewId,btnId,statusId,val){
+  var prompt=buildM0Prompt(val);
+  updatePreviewBox(previewId,prompt,val.trim());
+  updateStatusMsg(statusId,val.trim());
+  updateCopyBtn(btnId,!!val.trim());
+}
+
+function updatePreviewBox(boxId,text,kw){
+  var box=el(boxId);if(!box)return;
+  if(kw){
+    var esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    var kwEsc=kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    esc=esc.replace(new RegExp(kwEsc,'g'),'<span class="kw-highlight">'+kw+'</span>');
+    box.innerHTML=esc;
+  }else{box.textContent=text;}
+}
+
+function updateStatusMsg(msgId,hasVal){
+  var st=el(msgId);if(!st)return;
+  if(hasVal){st.className='kw-status kw-ok';st.textContent='\u2713 Siap di-copy';}
+  else{st.className='kw-status kw-empty';st.textContent='\u26a0 Isi field terlebih dahulu sebelum copy';}
+}
+function updateCopyBtn(btnId,enabled){
+  var btn=el(btnId);if(!btn)return;
+  btn.disabled=!enabled;btn.title=enabled?'Copy prompt':'Isi semua field terlebih dahulu';
+}
+function flashEmpty(inputId,statusId,msg){
+  var inp=el(inputId);if(inp){inp.focus();inp.style.borderColor='var(--rd)';}
+  var st=el(statusId);if(st){st.className='kw-status kw-empty';st.textContent='\u26a0 '+msg;}
+}
+
+function updStats(){
+  var v=Object.values(states);
+  el('cd').textContent=v.filter(function(s){return s==='done';}).length;
+  el('ca').textContent=v.filter(function(s){return s==='active';}).length;
+  el('ct').textContent=v.filter(function(s){return s==='todo';}).length;
+}
+function updSidebar(){
+  MODULES.forEach(function(m){
+    var s=states[m.id],ns=el('ns-'+m.id);
+    if(ns)ns.style.background=s==='done'?'var(--gn)':s==='active'?'var(--bl)':'var(--bd2)';
+  });
+  buildPip();
+}
+function buildPip(){
+  var pip=el('pip');if(!pip)return;pip.innerHTML='';
+  MODULES.forEach(function(m,i){
+    var s=states[m.id];
+    var d=ce('div','pd'+(s==='done'?' pd-done':s==='active'?' pd-active':''));
+    d.textContent=m.code.substring(0,2);d.title=m.name+': '+sc(s).lbl;
+    d.onclick=(function(id){return function(){show(id);};})(m.id);pip.appendChild(d);
+    if(i<MODULES.length-1){var a=ce('div','pa');a.textContent='\u203a';pip.appendChild(a);}
+  });
+}
+function setStatus(id,status){states[id]=status;updStats();updSidebar();show(cur);}
+function show(id){
+  cur=id;
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('act');});
+  var ni=el('nav-'+id);if(ni)ni.classList.add('act');
+  var main=el('main');main.innerHTML='';
+  if(id==='home')renderHome(main);
+  else{var mod=null;MODULES.forEach(function(m){if(m.id===id)mod=m;});if(mod)renderMod(main,mod);}
+}
+
+function copyText(text,btnId){
+  var btn=el(btnId);
+  function markOk(){
+    if(btn){var orig=btn.innerHTML;btn.textContent='\u2713 Tersalin!';btn.classList.add('ok');
+      setTimeout(function(){btn.innerHTML=orig;btn.classList.remove('ok');},2200);}
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(text).then(markOk).catch(function(){fallbackCopy(text,markOk);});
+  else fallbackCopy(text,markOk);
+}
+function fallbackCopy(text,cb){
+  var ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');if(cb)cb();}catch(e){alert('Silakan copy manual.');}
+  document.body.removeChild(ta);
+}
+function copyOpener(){copyText(buildOpenerText(),'oc-copy-btn');}
+function copyPrompt(id){
+  if(id==='m0'){copyM0Prompt();return;}
+  if(id==='m6'||id==='m7'||id==='m8'||id==='m9'){copyTopicPrompt(id);return;}
+  copyTextObf(PROMPTS[id]||'','cpbtn-'+id);
+}
+function showPreview(){
+  var text=buildOpenerText();
+  var overlay=document.createElement('div');overlay.className='preview-modal';
+  overlay.onclick=function(e){if(e.target===overlay)document.body.removeChild(overlay);};
+  var inner=ce('div','preview-inner');
+  var tr=ce('div','preview-title');
+  var t=document.createElement('span');t.textContent='Preview Instruksi Pembuka ['+SESSION_CODE+']';
+  var cl=ce('button','preview-close');cl.textContent='\u00d7';cl.onclick=function(){document.body.removeChild(overlay);};
+  tr.appendChild(t);tr.appendChild(cl);
+  var body=ce('div','preview-body');body.textContent=text;
+  inner.appendChild(tr);inner.appendChild(body);overlay.appendChild(inner);document.body.appendChild(overlay);
+}
+function resetAll(){
+  if(!confirm('Reset semua status modul ke "Belum dilakukan"?'))return;
+  MODULES.forEach(function(m){states[m.id]='todo';});
+  updStats();updSidebar();show(cur);
+}
+
+/* ===== RENDER HOME ===== */
+function renderHome(root){
+  var done=Object.values(states).filter(function(s){return s==='done';}).length;
+  var active=Object.values(states).filter(function(s){return s==='active';}).length;
+  var todo=Object.values(states).filter(function(s){return s==='todo';}).length;
+
+  var hero=ce('div','hero');
+  var h2=ce('h2');h2.textContent='Academic Literature Analysis System';hero.appendChild(h2);
+  var p=ce('p');p.textContent='Core Layer v1.1 \u2014 10 Modul \u2014 Custom Prompt Profesional untuk Peneliti Akademik';hero.appendChild(p);
+  var hsg=ce('div','hsg');
+  [[done,'Selesai','var(--gn)'],[active,'Berjalan','var(--bl)'],[todo,'Belum dilakukan','']].forEach(function(x){
+    var c=ce('div','hsc');var v=ce('div','val');v.textContent=String(x[0]);if(x[2])v.style.color=x[2];c.appendChild(v);
+    var l=ce('div','lbl');l.textContent=x[1];c.appendChild(l);hsg.appendChild(c);
+  });
+  hero.appendChild(hsg);root.appendChild(hero);
+
+  /* Opener */
+  var oc=ce('div','opener-card');
+  var obdg=ce('div','oc-badge');obdg.innerHTML='&#9733; Langkah 0 \u2014 Wajib Dimulai';oc.appendChild(obdg);
+  var ott=ce('div','oc-title');ott.textContent='Instruksi Pembuka & Kode Sesi Unik';oc.appendChild(ott);
+  var ots=ce('div','oc-sub');ots.textContent='Paste SEBELUM Core Layer di setiap sesi baru';oc.appendChild(ots);
+  var cd=ce('div','code-display');
+  var cl2=ce('div','code-lbl');cl2.textContent='Kode sesi:';cd.appendChild(cl2);
+  var cv=ce('div','code-val');cv.id='code-val';cv.textContent=SESSION_CODE;cd.appendChild(cv);
+  var rg=ce('button','code-regen');rg.textContent='\u21ba Buat baru';rg.onclick=newCode;cd.appendChild(rg);
+  oc.appendChild(cd);
+  var odesc=ce('div','oc-desc');
+  odesc.innerHTML='Kode <strong>['+SESSION_CODE+']</strong> disisipkan ke instruksi pembuka sebagai penanda unik sesi. Setiap output AI diberi prefix kode ini.<br><br>';
+  var eg1=ce('div');eg1.id='eg1';eg1.style.cssText='font-family:var(--mono);font-size:11px;color:var(--or);margin-top:4px';eg1.textContent='['+SESSION_CODE+'] \u2014 Tabel Inventaris Paper';
+  var eg2=ce('div');eg2.id='eg2';eg2.style.cssText='font-family:var(--mono);font-size:11px;color:var(--or);margin-top:2px';eg2.textContent='['+SESSION_CODE+'] \u2014 Kluster Teoritis';
+  odesc.appendChild(eg1);odesc.appendChild(eg2);oc.appendChild(odesc);
+  var oact=ce('div','oc-actions');
+  var ocopy=ce('button','oc-copy');ocopy.id='oc-copy-btn';ocopy.innerHTML='\u2398 Copy Instruksi Pembuka';ocopy.onclick=copyOpener;oact.appendChild(ocopy);
+  var oprev=ce('button','oc-preview');oprev.textContent='Preview isi prompt';oprev.onclick=showPreview;oact.appendChild(oprev);
+  oc.appendChild(oact);root.appendChild(oc);
+
+  /* How to use */
+  var how=ce('div','how');var h3=ce('h3');h3.textContent='Urutan penggunaan yang benar';how.appendChild(h3);
+  [{n:'0',txt:'Copy Instruksi Pembuka (kode sudah disisipkan) \u2014 paste ke AI.',or:true},
+   {n:'1',txt:'Copy Core Layer \u2014 paste ke AI setelah instruksi pembuka.',or:false},
+   {n:'2',txt:'Modul 0: ketik keyword \u2192 prompt otomatis \u2192 copy & paste.',or:false},
+   {n:'3',txt:'Upload paper, aktifkan Modul 1, lanjut ke Modul 2\u20135.',or:false},
+   {n:'4',txt:'Modul 6: ketik topik \u2192 10 rekomendasi judul lengkap.',or:false},
+   {n:'5',txt:'Modul 7: pilih skema hibah/publikasi \u2192 3 rekomendasi berimpact tinggi.',or:false},
+   {n:'6',txt:'Modul 8: pilih skema (Scopus Q1/SINTA 2) \u2192 IMRAD 1500 kata.',or:false},
+   {n:'7',txt:'Modul 9: topik dari M7 \u2192 5 dataset terverifikasi untuk Colab.',or:false}
+  ].forEach(function(s){
+    var row=ce('div','step');var n=ce('div',s.or?'sn orange':'sn');n.textContent=s.n;row.appendChild(n);
+    var t=ce('div','st');t.textContent=s.txt;row.appendChild(t);how.appendChild(row);
+  });
+  root.appendChild(how);
+
+  var glbl=ce('div');glbl.style.cssText='font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3);margin-bottom:10px';
+  glbl.textContent='Semua Modul (10)';root.appendChild(glbl);
+  var grid=ce('div','mgrid');
+  MODULES.forEach(function(m){
+    var c=COLORS[m.color];var s=states[m.id];var scc=sc(s);
+    var card=ce('div','mc');card.onclick=(function(id){return function(){show(id);};})(m.id);
+    var ico=ce('div','mi');ico.textContent=m.code;ico.style.cssText='background:'+c.bg+';color:'+c.tx+';border:1px solid '+c.bd;card.appendChild(ico);
+    var inf=document.createElement('div');inf.style.flex='1';
+    var nm=ce('div','mn');nm.textContent=m.sname;inf.appendChild(nm);
+    var ds=ce('div','md');ds.textContent=m.desc.substring(0,58)+'...';inf.appendChild(ds);
+    var st=ce('div','ms');st.textContent=scc.lbl;st.style.cssText='background:'+scc.bg+';color:'+scc.tx+';border-color:'+scc.bd;inf.appendChild(st);
+    card.appendChild(inf);grid.appendChild(card);
+  });
+  root.appendChild(grid);
+}
+
+/* ===== RENDER MODULE ===== */
+function renderMod(root,mod){
+  var s=states[mod.id];var scc=sc(s);var c=COLORS[mod.color];
+
+  var hdr=ce('div','mhdr');
+  var tr=ce('div','mtr');
+  var ico=ce('div','mico');ico.textContent=mod.code;ico.style.cssText='background:'+c.bg+';color:'+c.tx+';border-color:'+c.bd;tr.appendChild(ico);
+  var inf=document.createElement('div');
+  var nm=ce('div','mname');nm.textContent=mod.sname;inf.appendChild(nm);
+  var ds=ce('div','mdesc');ds.textContent=mod.desc;inf.appendChild(ds);
+  tr.appendChild(inf);hdr.appendChild(tr);
+  var meta=ce('div','mmeta');
+  var p1=ce('div','pill');p1.textContent='\u25cf '+scc.lbl;p1.style.cssText='background:'+scc.bg+';border-color:'+scc.bd+';color:'+scc.tx;meta.appendChild(p1);
+  var p2=ce('div','pill');p2.textContent=mod.pos;meta.appendChild(p2);
+  hdr.appendChild(meta);root.appendChild(hdr);
+
+  var sbar=ce('div','sbar');
+  var slbl=ce('div','slbl');slbl.textContent='Tandai status modul ini:';sbar.appendChild(slbl);
+  var tbg=ce('div','tbg');
+  [['todo','Belum','s-todo'],['active','Berjalan','s-active'],['done','Selesai','s-done']].forEach(function(x){
+    var b=ce('button','tog'+(s===x[0]?' '+x[2]:''));b.textContent=x[1];
+    b.onclick=(function(id,st){return function(){setStatus(id,st);};})(mod.id,x[0]);tbg.appendChild(b);
+  });
+  sbar.appendChild(tbg);root.appendChild(sbar);
+
+  if(mod.prereq){var pr=ce('div','pr');pr.innerHTML='<strong>\u26a0 Prasyarat:</strong> '+mod.prereq;root.appendChild(pr);}
+
+  var ic2=ce('div','ic2');
+  var ic1=ce('div','ic');var il1=ce('div','icl');il1.textContent='Output yang dihasilkan';ic1.appendChild(il1);
+  mod.out.forEach(function(o){var item=ce('div','ici');item.textContent=o;ic1.appendChild(item);});ic2.appendChild(ic1);
+  var ic2b=ce('div','ic');var il2=ce('div','icl');il2.textContent='Alur penggunaan';ic2b.appendChild(il2);
+  var wft=ce('div','ict');wft.textContent=mod.wf;ic2b.appendChild(wft);ic2.appendChild(ic2b);root.appendChild(ic2);
+
+  /* Obfuscation control bar */
+  renderObfBar(root);
+
+  /* ===== M0: keyword input ===== */
+  if(mod.id==='core'){
+    renderCoreLayerPanel(root);
+  }
+
+  if(mod.id==='m1'){
+    renderM1TemplateSection(root);
+  }
+
+  if(mod.id==='m0'){
+    renderM0YearFormula(root);
+    renderM0SourceFilter(root);
+    var kwb=ce('div','kw-block');
+    ce('div','kw-label','Kata Kunci Pencarian Artikel'); var kl=ce('div','kw-label');kl.textContent='Kata Kunci Pencarian Artikel';kwb.appendChild(kl);
+    var kd=ce('div','kw-desc');kd.textContent='Ketik kata kunci — prompt diperbarui real-time dan siap di-copy tanpa edit manual.';kwb.appendChild(kd);
+    var kr=ce('div','kw-row');
+    var ki=document.createElement('input');ki.type='text';ki.id='kw-input';ki.className='kw-input';
+    ki.placeholder='Contoh: machine learning in clinical decision support';ki.value=m0Keyword;
+    ki.addEventListener('input',function(){onKeywordInput(this.value);});
+    ki.addEventListener('keydown',function(e){if(e.key==='Enter'&&this.value.trim())copyM0Prompt();});
+    kr.appendChild(ki);
+    var kcl=ce('button','kw-clear');kcl.textContent='\u00d7 Hapus';
+    kcl.onclick=function(){m0Keyword='';var i=el('kw-input');if(i){i.value='';i.focus();}updateDynPreview('m0','m0-live','cpbtn-m0','kw-status-msg','');};
+    kr.appendChild(kcl);kwb.appendChild(kr);
+    var kst=ce('div',m0Keyword.trim()?'kw-status kw-ok':'kw-status kw-empty');kst.id='kw-status-msg';
+    kst.textContent=m0Keyword.trim()?'\u2713 Siap di-copy':'\u26a0 Ketik keyword sebelum copy';kwb.appendChild(kst);root.appendChild(kwb);
+    var ph=ce('div','pshdr');
+    var ps=ce('div','pslbl');ps.textContent='Preview Prompt Real-time';ph.appendChild(ps);
+    var cb=ce('button','cpbtn');cb.id='cpbtn-m0';cb.innerHTML='\u2398 Copy Prompt';cb.disabled=!m0Keyword.trim();cb.onclick=copyM0Prompt;ph.appendChild(cb);root.appendChild(ph);
+    var lp=ce('div','live-preview');lp.id='m0-live';root.appendChild(lp);
+    updateDynPreview('m0','m0-live','cpbtn-m0','kw-status-msg',m0Keyword);
+    setTimeout(function(){var i=el('kw-input');if(i)i.focus();},100);
+
+  /* ===== M6, M8: topic input ===== */
+  }else if(mod.id==='m6'||mod.id==='m8'||mod.id==='m9'){
+    if(mod.id==='m9') renderM9DatasetSection(root);
+    if(mod.id==='m8') renderM8ImradSection(root);
+    var topicVar=mod.id==='m6'?m6Topic:mod.id==='m8'?m8Topic:m9Topic;
+    var tb=ce('div','topic-block');
+    var tl=ce('div','topic-label');tl.textContent='Topik / Kata Kunci Riset';tb.appendChild(tl);
+    var td2=ce('div','topic-desc');
+    td2.textContent=mod.id==='m6'?
+      'Masukkan topik riset Anda. AI akan menghasilkan 10 rekomendasi judul lengkap dengan latar belakang, novelty, flowchart, dan gap (1500 kata/judul).'
+      :mod.id==='m8'?'Masukkan topik + pilih skema (Scopus Q1 atau SINTA 2). AI akan menghasilkan draft artikel IMRAD 1500 kata dengan 6 pernyataan per seksi.'
+      :'Masukkan topik dari Modul 7 Anda. AI akan merekomendasikan 5 dataset terverifikasi yang relevan dan mudah diimplementasikan di Google Colab.';
+    tb.appendChild(td2);
+    var tinp=document.createElement('textarea');
+    tinp.id=mod.id+'-input';tinp.className='topic-input';tinp.rows=2;
+    tinp.placeholder=mod.id==='m6'?'Contoh: Penerapan Deep Learning untuk Deteksi Penyakit Tanaman':'Contoh: sentiment analysis on social media using BERT';
+    tinp.value=topicVar;
+    tinp.addEventListener('input',(function(mid){return function(){onTopicInput(mid,this.value);};})(mod.id));
+    tb.appendChild(tinp);
+    var tst=ce('div',topicVar.trim()?'topic-status ts-ok':'topic-status ts-empty');tst.id=mod.id+'-status';
+    var tplaceholder=mod.id==='m9'?'Contoh: Machine Learning untuk Prediksi Stunting pada Balita (dari Modul 7)':mod.id==='m8'?'Contoh: Machine Learning untuk Prediksi Stunting pada Balita':'Contoh: Penerapan Deep Learning untuk Deteksi Penyakit Tanaman';
+    tinp.placeholder=tplaceholder;
+    tst.textContent=topicVar.trim()?'\u2713 Topik siap: "'+topicVar.trim()+'"':'\u26a0 Masukkan topik riset sebelum copy';tb.appendChild(tst);root.appendChild(tb);
+    var ph2=ce('div','pshdr');
+    var ps2=ce('div','pslbl');ps2.textContent='Preview Prompt Real-time';ph2.appendChild(ps2);
+    var cb2=ce('button','cpbtn');cb2.id=mod.id+'-copy';cb2.innerHTML='\u2398 Copy Prompt';
+    cb2.disabled=!(topicVar.trim()&&(mod.id!=='m8'||m8Scheme));
+    cb2.id=mod.id+'-copy';
+    cb2.onclick=(function(mid){return function(){copyTopicPrompt(mid);};})(mod.id);
+    ph2.appendChild(cb2);root.appendChild(ph2);
+    var lp2=ce('div','live-preview');lp2.id=mod.id+'-live';root.appendChild(lp2);
+    updatePreviewBox(mod.id+'-live',buildTopicPrompt(mod.id,topicVar,''),topicVar.trim());
+    setTimeout(function(){var i=el(mod.id+'-input');if(i)i.focus();},100);
+
+  /* ===== M7: topic + scheme ===== */
+  }else if(mod.id==='m7'){
+    var tb7=ce('div','topic-block');
+    var tl7=ce('div','topic-label');tl7.textContent='Topik / Kata Kunci Riset';tb7.appendChild(tl7);
+    var td7=ce('div','topic-desc');td7.textContent='Masukkan topik riset, lalu pilih skema hibah atau publikasi target. AI akan merekomendasikan 3 penelitian berimpact tinggi untuk skema tersebut.';tb7.appendChild(td7);
+    var tinp7=document.createElement('textarea');tinp7.id='m7-input';tinp7.className='topic-input';tinp7.rows=2;
+    tinp7.placeholder='Contoh: Machine Learning untuk Prediksi Stunting pada Balita';tinp7.value=m7Topic;
+    tinp7.addEventListener('input',function(){onTopicInput('m7',this.value);});
+    tb7.appendChild(tinp7);
+    var tst7=ce('div',m7Topic.trim()?'topic-status ts-ok':'topic-status ts-empty');tst7.id='m7-status';
+    tst7.textContent=m7Topic.trim()?'\u2713 Topik siap':'\u26a0 Masukkan topik riset';tb7.appendChild(tst7);root.appendChild(tb7);
+
+    /* Scheme selector */
+    var sb=ce('div','scheme-block');
+    var sbl=ce('div','scheme-label');sbl.textContent='Pilih Skema Hibah atau Publikasi';sb.appendChild(sbl);
+    var sbd=ce('div','scheme-desc');sbd.textContent='Pilih satu skema. Prompt akan disesuaikan dengan persyaratan dan luaran skema yang dipilih.';sb.appendChild(sbd);
+    var sgrid=ce('div','scheme-grid');
+    SCHEMES.forEach(function(sc4){
+      var card=ce('div','scheme-card');card.id='scheme-card-'+sc4.id;
+      if(m7Scheme===sc4.id){card.style.borderColor=sc4.color;card.style.background=sc4.bg;}
+      card.onclick=(function(sid){return function(){onSchemeSelect(sid);};})(sc4.id);
+      var radio=ce('div','scheme-radio');radio.id='scheme-radio-'+sc4.id;
+      radio.style.borderColor=m7Scheme===sc4.id?sc4.color:'var(--bd2)';
+      radio.style.color=sc4.color;
+      if(m7Scheme===sc4.id)radio.innerHTML='<div style="width:7px;height:7px;border-radius:50%;background:'+sc4.color+'"></div>';
+      card.appendChild(radio);
+      var si=ce('div','scheme-info');
+      var sn2=ce('div','scheme-name');sn2.textContent=sc4.label;sn2.style.color=sc4.color;si.appendChild(sn2);
+      var sd=ce('div','scheme-detail');sd.textContent=sc4.desc;si.appendChild(sd);
+      var su=ce('div','scheme-url');su.textContent=sc4.url;si.appendChild(su);
+      card.appendChild(si);sgrid.appendChild(card);
+    });
+    sb.appendChild(sgrid);
+    var sst=ce('div',m7Scheme?'scheme-status ok':'scheme-status');sst.id='scheme-status';
+    sst.textContent=m7Scheme?('\u2713 Skema dipilih: '+(SCHEMES.find(function(s){return s.id===m7Scheme;})||{label:m7Scheme}).label):'\u26a0 Pilih salah satu skema di atas';
+    sb.appendChild(sst);root.appendChild(sb);
+
+    var ph7=ce('div','pshdr');
+    var ps7=ce('div','pslbl');ps7.textContent='Preview Prompt Real-time';ph7.appendChild(ps7);
+    var cb7=ce('button','cpbtn');cb7.id='m7-copy';cb7.innerHTML='\u2398 Copy Prompt';
+    cb7.disabled=!(m7Topic.trim()&&m7Scheme);
+    cb7.onclick=function(){copyTopicPrompt('m7');};ph7.appendChild(cb7);root.appendChild(ph7);
+    var lp7=ce('div','live-preview');lp7.id='m7-live';root.appendChild(lp7);
+    updatePreviewBox('m7-live',buildTopicPrompt('m7',m7Topic,m7Scheme),m7Topic.trim());
+    setTimeout(function(){var i=el('m7-input');if(i)i.focus();},100);
+
+  /* ===== Modul statis lainnya ===== */
+  }else{
+    var pshdr3=ce('div','pshdr');
+    var pslbl3=ce('div','pslbl');pslbl3.textContent='Prompt \u2014 copy & paste ke AI manapun';pshdr3.appendChild(pslbl3);
+    var cpbtn3=ce('button','cpbtn');cpbtn3.id='cpbtn-'+mod.id;cpbtn3.innerHTML='\u2398 Copy prompt';
+    cpbtn3.onclick=(function(id){return function(){copyPrompt(id);};})(mod.id);pshdr3.appendChild(cpbtn3);root.appendChild(pshdr3);
+    var pbox3=ce('div','pbox');pbox3.id='pb-'+mod.id;pbox3.textContent=PROMPTS[mod.id]||'(Prompt tidak tersedia)';root.appendChild(pbox3);
+  }
+
+  /* Anti-hallucination */
+  var ahl=ce('div','ahl');
+  var ahh=ce('div','ahh');ahh.textContent='\u26a0 Aturan Anti-Halusinasi \u2014 Berlaku di Seluruh Sesi';ahl.appendChild(ahh);
+  [['D.1','[Author, Year] untuk klaim dari paper \u2014 [Analysis] untuk interpretasi AI'],
+   ['D.2','Data tidak ada \u2192 tulis [Not stated in paper] \u2014 jangan biarkan sel kosong'],
+   ['D.3','Item genuine < target \u2192 laporkan jumlah aktual \u2014 jangan fabrikasi'],
+   ['D.4','Tiga level epistemic: [Stated] / [Implied] / [Analysis] \u2014 jangan campur tanpa label']
+  ].forEach(function(r){
+    var row=ce('div','ahr');var code=ce('div','ahc');code.textContent=r[0];row.appendChild(code);
+    var txt=document.createElement('span');txt.textContent=r[1];row.appendChild(txt);ahl.appendChild(row);
+  });
+  root.appendChild(ahl);
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  var raw=el('prompt-data');
+  if(raw){try{PROMPTS=JSON.parse(raw.textContent);}catch(e){console.error('JSON parse error:',e);}}
+  var rawS=el('scheme-data');
+  if(rawS){try{SCHEMES=JSON.parse(rawS.textContent);}catch(e){console.error('Scheme parse error:',e);}}
+  SESSION_CODE=genCode();
+  updStats();updSidebar();show('home');
+});
+
+
+/* Override copy functions untuk obfuskasi */
+var _origCopyText = copyText;
+function copyTextObf(text, btnId){
+  _origCopyText(getObfuscatedText(text), btnId);
+}
+
+/* Render obfuscation control bar */
+function renderObfBar(root){
+  var bar=ce('div','obf-bar');
+
+  var left=ce('div','obf-left');
+  var icon=ce('div','obf-icon');icon.textContent='\u{1F512}';left.appendChild(icon);
+  var info=ce('div','obf-info');
+  var title=ce('div','obf-title');title.textContent='Obfuskasi Prompt — Perlindungan Akun Sharing';info.appendChild(title);
+  var desc=ce('div','obf-desc');desc.textContent='Prompt diacak strukturnya setiap kali di-copy. Instruksi tetap berfungsi, tapi teks berbeda tiap sesi.';info.appendChild(desc);
+  left.appendChild(info);bar.appendChild(left);
+
+  var right=ce('div','obf-right');
+
+  /* Token display */
+  var token=ce('div','obf-token');token.id='obf-token-display';token.textContent=OBF.genToken(SESSION_CODE||'XXX');right.appendChild(token);
+
+  /* Regen token */
+  var regen=ce('button','obf-regen');regen.innerHTML='\u21ba Token baru';regen.onclick=regenerateObfToken;right.appendChild(regen);
+
+  /* Strength selector */
+  var strow=ce('div','obf-strength');
+  var stlbl=ce('div','obf-strength-lbl');stlbl.textContent='Kekuatan:';strow.appendChild(stlbl);
+  var sel=document.createElement('select');sel.id='obf-strength-sel';
+  [['low','Ringan (~35%)'],['medium','Sedang (~55%)'],['high','Kuat (~70%)']].forEach(function(o){
+    var opt=document.createElement('option');opt.value=o[0];opt.textContent=o[1];
+    if(o[0]===obfStrength) opt.selected=true;
+    sel.appendChild(opt);
+  });
+  sel.onchange=function(){setObfStrength(this.value);};
+  strow.appendChild(sel);right.appendChild(strow);
+
+  /* Toggle on/off */
+  var tog=ce('label','obf-toggle');
+  var cb=document.createElement('input');cb.type='checkbox';cb.checked=obfEnabled;
+  cb.onchange=function(){setObfEnabled(this.checked);};
+  var sw=ce('div','obf-switch');
+  var lbl=ce('div','obf-switch-lbl');lbl.textContent='Aktifkan';
+  tog.appendChild(cb);tog.appendChild(sw);tog.appendChild(lbl);right.appendChild(tog);
+
+  /* Status badge */
+  var badge=ce('div',obfEnabled?'obf-badge':'obf-badge off');badge.id='obf-global-badge';
+  badge.textContent=obfEnabled?'\u{1F512} Aktif':'\u{1F513} Nonaktif';right.appendChild(badge);
+
+  bar.appendChild(right);
+  root.appendChild(bar);
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALAS v3.0 — Academic Literature Analysis System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>ALAS v3.0</h1>
+    <div class="header-actions">
+      <button id="btn-export" title="Backup State">💾</button>
+      <button id="btn-settings" title="Core Layer Config">⚙️</button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- Progress Tracker -->
+    <section class="progress-container">
+      <div class="module-steps" id="module-steps"></div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+    </section>
+
+    <!-- Dynamic Content Area -->
+    <section class="content-area" id="content-area">
+      <!-- Rendered by JS -->
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="input">📥 Input</button>
+    <button class="nav-btn" data-view="process">⚙️ Proses</button>
+    <button class="nav-btn" data-view="output">📤 Output</button>
+  </nav>
+
+  <!-- Settings Modal -->
+  <dialog id="settings-modal" class="modal">
+    <div class="modal-content">
+      <h2>Core Layer Configuration</h2>
+      <form id="config-form">
+        <label>Bidang Penelitian
+          <select id="cfg-domain">
+            <option value="">Pilih...</option>
+            <option value="Data Mining">Data Mining</option>
+            <option value="Sentiment Analysis">Sentiment Analysis</option>
+            <option value="Policy Analysis">Policy Analysis</option>
+          </select>
+        </label>
+        <label>Level Akademik
+          <select id="cfg-level">
+            <option value="Skripsi">Skripsi</option>
+            <option value="Tesis">Tesis</option>
+            <option value="Disertasi">Disertasi</option>
+            <option value="Hibah">Hibah Kompetitif</option>
+          </select>
+        </label>
+        <label>Target Publikasi
+          <select id="cfg-target">
+            <option value="SINTA 2">SINTA 2</option>
+            <option value="Scopus Q1">Scopus Q1</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button type="button" id="btn-close-modal">Batal</button>
+          <button type="submit">Simpan & Apply</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>

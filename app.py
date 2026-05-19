@@ -3,6 +3,38 @@ import pandas as pd
 import json
 import datetime
 import re
+import os
+from io import BytesIO
+
+# ================= DEPENDENCY CHECK =================
+def check_dependencies():
+    """Cek ketersediaan library opsional tanpa crash"""
+    missing = []
+    try: import openai
+    except ImportError: missing.append("openai (pip install openai)")
+    try: import docx
+    except ImportError: missing.append("python-docx (pip install python-docx)")
+    return missing
+
+DEPS_MISSING = check_dependencies()
+if DEPS_MISSING:
+    st.warning("⚠️ Library opsional belum terinstall. Fitur AI/Export akan dinonaktifkan sementara.\n" + "\n".join(DEPS_MISSING))
+
+if "openai" not in globals():
+    class DummyOpenAI:
+        def __init__(self, *args, **kwargs): pass
+        class chat:
+            class completions:
+                @staticmethod
+                def create(*args, **kwargs): raise ImportError("openai not installed")
+    OpenAI = DummyOpenAI
+else:
+    from openai import OpenAI
+
+if "docx" in globals():
+    import docx
+    from docx.shared import Pt, Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 # ================= KONFIGURASI HALAMAN =================
 st.set_page_config(
@@ -17,521 +49,332 @@ st.markdown("""
 <style>
     .stButton button { min-height: 44px; font-weight: 500; }
     .stTabs [data-baseweb="tab-list"] button { padding: 8px 16px; }
-    .module-badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; }
+    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; display: inline-block; }
     .badge-done { background: #dcfce7; color: #16a34a; }
     .badge-pending { background: #fef9c3; color: #ca8a04; }
     .badge-locked { background: #f3f4f6; color: #9ca3af; }
-    .badge-rejected { background: #fee2e2; color: #dc2626; }
     .guardrail-box { padding: 10px; background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 4px; margin: 8px 0; font-size: 0.9rem; }
-    .prompt-code { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; }
     .academic-text { line-height: 1.8; font-size: 1.05rem; }
-    .flowchart-ascii { background: #f1f5f9; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; }
+    .flowchart-ascii { background: #f1f5f9; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; white-space: pre; }
+    .status-ai { background: #dbeafe; border-left: 4px solid #3b82f6; padding: 8px; border-radius: 4px; margin: 8px 0; }
+    .status-manual { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 8px; border-radius: 4px; margin: 8px 0; }
 </style>
 """, unsafe_allow_html=True)
 
 # ================= KONSTANTA & SPESIFIKASI MODUL (Dashboard v2.2) =================
-MODULES = ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "CL"]
+MODULES = ["CL", "M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9"]
+
 MODULE_SPECS = {
-    "M0": {"name": "Literature Search", "desc": "Jurnal primer • 4 tahun • 50% terkini • Scopus/IEEE • Exclude: conference/SLR", "input": ["keyword", "paper_metadata"], "output": "10 paper tervalidasi"},
-    "M1": {"name": "Intake Protocol", "desc": "Auto-deteksi metadata • Tanpa upload PDF • Validasi DOI", "input": ["paper_blocks"], "output": "Tabel metadata terstandarisasi"},
-    "M2": {"name": "Contradiction Finder", "desc": "Identifikasi kontradiksi genuine antar paper", "input": ["validated_papers"], "output": "Laporan kontradiksi + evidence map"},
-    "M3": {"name": "Citation Chain", "desc": "Pelacakan genealogi konsep teoritis", "input": ["papers_with_doi"], "output": "Peta sitasi + konsep inti"},
-    "M4": {"name": "Gap Scanner", "desc": "Pemetaan 5 research gap ter-ranking", "input": ["analyzed_papers"], "output": "5 GAP prioritized + justifikasi"},
-    "M5": {"name": "Methodology Audit", "desc": "Evaluasi 4 kriteria: desain, sampel, instrumen, analisis", "input": ["papers_abstract"], "output": "Audit report + rekomendasi perbaikan"},
-    "M6": {"name": "10 Rekomendasi Judul", "desc": "2500 kata/judul • Latar belakang • Urgensi • GAP • 2 novelty • Flowchart ASCII • Alignment Q1/SINTA 2", "input": ["M5_output", "M0_papers"], "output": "10 judul lengkap + flowchart"},
-    "M7": {"name": "Hibah & Publikasi", "desc": "3500 kata • 7 skema: BIMA(PDP/PFR/Prototype/Model), BRIN, Scopus Q1, SINTA 2", "input": ["M6_titles"], "output": "21 rekomendasi proposal/artikel"},
-    "M8": {"name": "Template IMRAD", "desc": "5000 kata • Scopus Q1(EN) & SINTA 2(ID) • 6 pernyataan/sekssi • Sitasi hanya di Results", "input": ["M7_selected"], "output": "Naskah IMRAD siap submit"},
-    "M9": {"name": "Rekomendasi Dataset", "desc": "5 dataset • Colab-ready • Open access • Permanent link • Anti-fake • Alignment topik", "input": ["research_scope"], "output": "Tabel dataset + Colab snippet"},
-    "CL": {"name": "Core Layer Fondasi", "desc": "Abstract-Only Mode • Anti-Halusinasi • Evidence Chain • Iteratif Protocol", "input": ["system_init"], "output": "Directive aktif"}
+    "CL": {"name": "Core Layer Fondasi", "desc": "Abstract-Only • Anti-Halusinasi • Evidence Chain • Iteratif"},
+    "M0": {"name": "Literature Search", "desc": "Jurnal primer • 4 tahun • 50% terkini • Exclude conference/SLR"},
+    "M1": {"name": "Intake Protocol", "desc": "Auto-deteksi metadata • Tanpa PDF • Validasi DOI"},
+    "M2": {"name": "Contradiction Finder", "desc": "Kontradiksi genuine antar paper"},
+    "M3": {"name": "Citation Chain", "desc": "Genealogi konsep teoritis"},
+    "M4": {"name": "Gap Scanner", "desc": "5 research gap ter-ranking"},
+    "M5": {"name": "Methodology Audit", "desc": "Evaluasi 4 kriteria metodologi"},
+    "M6": {"name": "10 Rekomendasi Judul", "desc": "2500 kata/judul • Latar belakang • Urgensi • GAP • 2 novelty • Flowchart ASCII"},
+    "M7": {"name": "Hibah & Publikasi", "desc": "3500 kata • PDP/PFR/Prototype/Model/BRIN • Q1-Q3/SINTA 2-4"},
+    "M8": {"name": "Template IMRAD", "desc": "5000 kata • 6 pernyataan/sekssi • Sitasi hanya di Results"},
+    "M9": {"name": "Rekomendasi Dataset", "desc": "5 dataset • Colab-ready • Open access • Anti-fake"}
 }
 
-DEFAULT_CONFIG = {
-    "domain": "Umum", 
-    "level": "Skripsi", 
-    "target": "SINTA 2",
-    "terminology": {"instansi": True, "pegawai": True}  # Preferensi terminologi akademik
+RESEARCH_DOMAINS = ["Sosial dan Humaniora", "Sains", "Teknologi", "Ilmu Komputer", "Umum"]
+GRANT_SCHEMES = ["PDP", "PFR", "Terapan - Luaran Prototype", "Terapan - Luaran Model", "BRIN"]
+PUBLICATION_TARGETS = ["Proposal Penelitian", "Scopus Q1", "Scopus Q2", "Scopus Q3", "SINTA 2", "SINTA 3", "SINTA 4"]
+
+DOMAIN_SPECS = {
+    "Sosial dan Humaniora": "Fokus: teori sosial, metode kualitatif/kuantitatif, konteks kebijakan Indonesia",
+    "Sains": "Fokus: metode eksperimental, validitas data, reproducibility",
+    "Teknologi": "Fokus: implementasi sistem, evaluasi kinerja, studi kasus instansi",
+    "Ilmu Komputer": "Fokus: algoritma, kompleksitas, benchmark dataset",
+    "Umum": "Fokus: metodologi umum, adaptabilitas lintas disiplin"
 }
 
-# ================= STATE MANAGEMENT =================
+DEFAULT_CONFIG = {"domain": "Umum", "level": "Skripsi", "target": "Proposal Penelitian", "terminology": {"instansi": True, "pegawai": True}}
+
+# ================= STATE MANAGEMENT (SAFE) =================
 def init_state():
-    if 'modules' not in st.session_state:
-        st.session_state.modules = {m: {"status": "locked", "data": None, "output": None, "evidence_log": []} for m in MODULES}
+    keys_to_check = ["modules", "config", "current", "anchor", "process_mode", "evidence_chain", "m6_batch"]
+    for k in keys_to_check:
+        if k not in st.session_state:
+            st.session_state[k] = None
+            
+    if st.session_state.modules is None:
+        st.session_state.modules = {m: {"status": "locked", "data": {}, "output": None} for m in MODULES}
         st.session_state.modules["M0"]["status"] = "pending"
-        st.session_state.modules["CL"]["status"] = "done"  # Core Layer always active
-    if 'config' not in st.session_state:
+        st.session_state.modules["CL"]["status"] = "done"
+    if st.session_state.config is None:
         st.session_state.config = DEFAULT_CONFIG.copy()
-    if 'current' not in st.session_state:
+    if st.session_state.current is None:
         st.session_state.current = "M0"
-    if 'anchor' not in st.session_state:
-        st.session_state.anchor = {"topic": "", "novelty": [], "method": "", "target": "", "locked_after_M6": False}
-    if 'process_mode' not in st.session_state:
-        st.session_state.process_mode = "manual"
-    if 'evidence_chain' not in st.session_state:
-        st.session_state.evidence_chain = []  # Track all [Ref: ID_Paper] usage
-
-init_state()
+    if st.session_state.anchor is None:
+        st.session_state.anchor = {"topic": "", "locked_after_M6": False}
+    if st.session_state.process_mode is None:
+        st.session_state.process_mode = "🤖 Qwen AI"
+    if st.session_state.evidence_chain is None:
+        st.session_state.evidence_chain = []
+    if st.session_state.m6_batch is None:
+        st.session_state.m6_batch = {"start": 1, "size": 1}
 
 def save_state():
-    """Update status modul & kunci anchor setelah M6"""
-    current = st.session_state.current
-    st.session_state.modules[current]["status"] = "done"
-    
-    # Unlock next module
-    if current in MODULES[:-1]:
-        idx = MODULES.index(current)
-        if st.session_state.modules[MODULES[idx+1]]["status"] == "locked":
-            st.session_state.modules[MODULES[idx+1]]["status"] = "pending"
-    
-    # Lock anchor core setelah M6 selesai pertama kali
-    if current == "M6" and not st.session_state.anchor["locked_after_M6"]:
+    """Update status & unlock next module secara aman"""
+    curr = st.session_state.current
+    if curr in st.session_state.modules:
+        st.session_state.modules[curr]["status"] = "done"
+        idx = MODULES.index(curr)
+        if idx < len(MODULES) - 1:
+            nxt = MODULES[idx + 1]
+            if st.session_state.modules[nxt]["status"] == "locked":
+                st.session_state.modules[nxt]["status"] = "pending"
+    if curr == "M6" and not st.session_state.anchor["locked_after_M6"]:
         st.session_state.anchor["locked_after_M6"] = True
         st.session_state.anchor["topic"] = st.session_state.anchor.get("topic") or "Penelitian berbasis metadata abstrak"
-        st.session_state.anchor["target"] = st.session_state.config["target"]
 
 def validate_m0_paper(paper: dict) -> dict:
-    """Validasi deterministik untuk M0: jurnal primer, 4 tahun, DOI valid, exclude conference/SLR"""
-    result = {"valid": True, "reasons": [], "flags": []}
-    
-    # Check required fields
+    """Validasi deterministik M0 dengan safe access"""
+    res = {"valid": True, "reasons": [], "flags": []}
     required = ["TITLE", "ABSTRACT", "KEYWORDS", "YEAR", "JOURNAL", "DOI"]
-    for field in required:
-        if field not in paper or not paper[field].strip():
-            result["valid"] = False
-            result["reasons"].append(f"Missing: {field}")
-    
-    if not result["valid"]:
-        return result
-    
-    # Check year range (4 tahun terakhir)
+    for f in required:
+        if not paper.get(f, "").strip():
+            res["valid"] = False; res["reasons"].append(f"Missing: {f}")
+    if not res["valid"]: return res
     try:
-        year = int(paper["YEAR"])
-        current_year = datetime.datetime.now().year
-        if not (current_year - 4 <= year <= current_year):
-            result["valid"] = False
-            result["reasons"].append(f"Year {year} outside 4-year range")
-        elif year >= current_year - 1:
-            result["flags"].append("recent_1-2yr")  # Untuk hitung 50% terkini
-    except:
-        result["valid"] = False
-        result["reasons"].append("Invalid YEAR format")
-    
-    # Check journal type (exclude conference/proceedings/SLR)
-    journal_lower = paper.get("JOURNAL", "").lower()
-    abstract_lower = paper.get("ABSTRACT", "").lower()
-    exclude_keywords = ["conference", "proceedings", "workshop", "symposium", 
-                       "systematic review", "meta-analysis", "bibliometric", "literature review"]
-    for kw in exclude_keywords:
-        if kw in journal_lower or kw in abstract_lower:
-            result["valid"] = False
-            result["reasons"].append(f"Excluded: contains '{kw}'")
-            result["flags"].append(f"rejected_{kw.replace(' ', '_')}")
-            break
-    
-    # Check DOI format
+        y = int(paper.get("YEAR", 0))
+        cy = datetime.datetime.now().year
+        if not (cy-4 <= y <= cy): res["valid"] = False; res["reasons"].append(f"Year {y} out of range")
+        elif y >= cy-1: res["flags"].append("recent")
+    except: res["valid"] = False; res["reasons"].append("Invalid YEAR")
+    j = paper.get("JOURNAL", "").lower(); a = paper.get("ABSTRACT", "").lower()
+    excl = ["conference", "proceedings", "workshop", "systematic review", "meta-analysis", "bibliometric"]
+    if any(k in j or k in a for k in excl):
+        res["valid"] = False; res["reasons"].append("Excluded: conference/review")
     doi = paper.get("DOI", "")
     if doi and not re.match(r'^10\.\d{4,9}/[-._;()/:A-Z0-9]+$', doi, re.I):
-        result["flags"].append("doi_format_warning")  # Warning, not reject
+        res["flags"].append("doi_warn")
+    return res
+
+# ================= AI & PROMPT ENGINE (DEFENSIVE) =================
+def get_qwen_client():
+    try:
+        key = st.secrets.get("QWEN_API_KEY", "")
+        base = st.secrets.get("QWEN_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
+        if not key: return None
+        return OpenAI(api_key=key, base_url=base)
+    except Exception: return None
+
+def generate_prompt_for_module(mod_id: str, inp: dict) -> str:
+    cfg = st.session_state.config
+    dom_note = DOMAIN_SPECS.get(cfg.get("domain", "Umum"), "")
+    term_note = "\n• Gunakan: 'instansi' (bukan 'perusahaan'), 'pegawai' (bukan 'karyawan')" if cfg.get("terminology", {}).get("instansi") else ""
+    spec = MODULE_SPECS.get(mod_id, {}).get("desc", "")
     
-    return result
+    base = f"""[CORE_LAYER_v3.0 — {'QWEN' if st.session_state.process_mode=='🤖 Qwen AI' else 'MANUAL'} MODE]
+Bidang: {cfg['domain']} | Level: {cfg['level']} | Target: {cfg['target']}{term_note}
+Spesifikasi: {spec} | Konteks: {dom_note}
+[INPUT]\n{json.dumps(inp, indent=2, ensure_ascii=False)}
+[INSTRUKSI]
+1. Analisis HANYA dari metadata (judul, abstrak, keyword). Dilarang akses PDF/full-text.
+2. Jangan mengarang data/sitasi/metode. Gunakan tag: `[Ref: ID_Paper, Field: Abstract/Keyword]`
+3. Jika ambigu: `[NEEDS_CLARIFICATION: <field>]`. Jangan asumsi.
+4. Output JSON STRICT: {{"layer1_summary":"...", "layer2_academic":"...", "layer3_metadata":{{"module":"{mod_id}", "guardrails":true}}}}
+[STATUS_MODUL: {mod_id}_SELESAI]"""
+    return base
 
-# ================= FUNGSI HELPER: MANUAL MODE + CORE LAYER v3.0 =================
-def generate_prompt_for_module(module_id: str, input_data: dict) -> str:
-    """Generate prompt Core Layer v3.0 yang siap copy-paste ke AI eksternal"""
-    config = st.session_state.config
-    spec = MODULE_SPECS.get(module_id, {})
+def run_ai_processing(mod_id: str, inp: dict) -> dict:
+    """Semi-auto dengan fallback manual & error handling"""
+    client = get_qwen_client()
+    prompt = generate_prompt_for_module(mod_id, inp)
     
-    # Terminologi preference injection
-    term_note = ""
-    if config.get("terminology", {}).get("instansi"):
-        term_note = "\n• Gunakan terminologi: 'instansi' (bukan 'perusahaan'), 'pegawai' (bukan 'karyawan')"
-    
-    return f"""[CORE_LAYER_v3.0 — MANUAL MODE]
-Bidang: {config['domain']} | Level: {config['level']} | Target: {config['target']}{term_note}
-Modul: {module_id} — {spec.get('name', '')}
-Spesifikasi: {spec.get('desc', 'Proses sesuai dashboard v2.2')}
+    if client and st.session_state.process_mode == "🤖 Qwen AI" and "openai" in globals():
+        try:
+            with st.spinner("🤖 Qwen memproses... (10-30dtk)"):
+                res = client.chat.completions.create(
+                    model=st.secrets.get("QWEN_MODEL", "qwen-plus"),
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=0.1, max_tokens=4000,
+                    response_format={"type": "json_object"}
+                )
+                raw = res.choices[0].message.content.strip()
+                if raw.startswith("```json"): raw = raw.split("```json")[1].split("```")[0]
+                elif raw.startswith("```"): raw = raw.split("```")[1].split("```")[0]
+                out = json.loads(raw)
+                out["status"] = "ai_success"; out["mode"] = "qwen"
+                return out
+        except json.JSONDecodeError:
+            st.warning("⚠️ Respons JSON tidak valid. Fallback manual.")
+        except Exception as e:
+            st.warning(f"⚠️ API Error: {str(e)[:100]}. Fallback manual.")
 
-[INPUT DATA]
-{json.dumps(input_data, indent=2, ensure_ascii=False)}
+    # Fallback Manual
+    if mod_id == "M0" and isinstance(inp.get("raw"), str):
+        blocks = [b.strip() for b in inp["raw"].split('\n\n') if b.strip()]
+        valid_papers, recent = [], 0
+        for i, blk in enumerate(blocks[:10]):
+            p = {k.strip().upper(): v.strip() for k,v in (line.split(':',1) for line in blk.split('\n') if ':' in line)}
+            val = validate_m0_paper(p)
+            p["_id"] = f"P{i+1}"
+            if val["valid"]:
+                valid_papers.append(p)
+                if "recent" in val["flags"]: recent += 1
+        inp["validated_papers"] = valid_papers
+        inp["summary"] = f"{len(valid_papers)} valid. {recent}/{len(valid_papers)} terkini."
+        if valid_papers and recent/len(valid_papers) < 0.5:
+            st.warning("⚠️ <50% paper dari 1-2 tahun terkini.")
 
-[INSTRUKSI EKSEKUSI — WAJIB]
-1. Analisis HANYA berdasarkan metadata yang diberikan (judul, abstrak, keyword). Dilarang akses full-text/PDF.
-2. Jangan mengarang data, sitasi, metode, atau temuan yang tidak eksplisit tertulis di input.
-3. Setiap klaim analitis HARUS disertai tag referensi: `[Ref: ID_Paper#X, Field: Abstract/Keyword]`
-4. Jika informasi tidak lengkap/ambigu, tampilkan `[NEEDS_CLARIFICATION: <field>]` — jangan mengisi dengan asumsi.
-5. Terapkan guardrail: Anti-Halusinasi • Evidence Chain • Abstract-Only • Iteratif Protocol.
-
-[FORMAT OUTPUT — STRUKTUR WAJIB]
-### Ringkasan Eksekutif
-• Poin 1 (maksimal 15 kata)
-• Poin 2
-• Poin 3
-
-### Konten Akademik Lengkap
-[Narasi sesuai spesifikasi modul {module_id}. Gunakan heading Markdown: ##, ###, ####]
-{f'- Untuk M6: Sertakan flowchart ASCII hierarki' if module_id == 'M6' else ''}
-{f'- Untuk M8: Bahasa Inggris, 6 pernyataan/sekssi, sitasi hanya di Results' if module_id == 'M8' else ''}
-{f'- Untuk M9: Sertakan Colab snippet + validasi link' if module_id == 'M9' else ''}
-
-### Metadata & Evidence
-- Modul: {module_id}
-- Bahasa: {"Inggris (Scopus Q1) / Indonesia (SINTA 2)" if module_id == 'M8' else 'Indonesia akademik formal'}
-- Evidence completeness: ≥95% (hitung % klaim dengan [Ref: ...])
-- Guardrails passed: ✅
-
-[STATUS_MODUL: {module_id}_SELESAI]
-"""
-
-def run_ai_processing(module_id: str, input_data: dict) -> dict:
-    """
-    MODE MANUAL: Generate prompt Core Layer v3.0 untuk dipaste ke AI eksternal.
-    M0: Tambahkan validasi deterministik sebelum generate prompt.
-    """
-    # Special handling for M0: validate papers first
-    if module_id == "M0" and isinstance(input_data.get("raw"), str):
-        # Parse simple format: blocks separated by blank lines
-        blocks = [b.strip() for b in input_data["raw"].split('\n\n') if b.strip()]
-        validated = []
-        recent_count = 0
-        
-        for i, block in enumerate(blocks[:10]):  # Max 10 papers
-            paper = {}
-            for line in block.split('\n'):
-                if ':' in line:
-                    key, val = line.split(':', 1)
-                    paper[key.strip().upper()] = val.strip()
-            
-            validation = validate_m0_paper(paper)
-            paper["_id"] = f"P{i+1}"
-            paper["_validation"] = validation
-            
-            if validation["valid"]:
-                validated.append(paper)
-                if "recent_1-2yr" in validation.get("flags", []):
-                    recent_count += 1
-        
-        # Check 50% recent rule
-        total_valid = len(validated)
-        if total_valid > 0 and recent_count / total_valid < 0.5:
-            st.warning(f"⚠️ Hanya {recent_count}/{total_valid} paper dari 1-2 tahun terkini (<50%). Pertimbangkan menambah paper terbaru.")
-        
-        input_data["validated_papers"] = validated
-        input_data["summary"] = f"{len(validated)} paper valid dari {len(blocks)} input"
-    
     return {
-        "status": "manual_mode",
-        "layer1_summary": f"⚠️ Mode Manual: Salin prompt di tab 📖 Detail, paste ke AI eksternal (ChatGPT/Claude/Gemini/Qwen), lalu kembalikan hasilnya.",
-        "layer2_academic": generate_prompt_for_module(module_id, input_data),
-        "layer3_metadata": {
-            "module": module_id,
-            "spec": MODULE_SPECS.get(module_id, {}).get("desc", ""),
-            "mode": "manual", 
-            "note": "Paste output AI ke field di tab 📖 Detail Akademik",
-            "guardrails": ["Anti-Halusinasi", "Evidence Chain", "Abstract-Only", "Iterative Protocol", "Terminology Consistency"],
-            "validation_summary": input_data.get("summary") if module_id == "M0" else None
-        }
+        "status": "manual_mode", "mode": "fallback",
+        "layer1_summary": "⚠️ Mode Manual: Salin prompt di tab 📖 Detail, paste ke AI, kembalikan hasil.",
+        "layer2_academic": prompt,
+        "layer3_metadata": {"module": mod_id, "mode": "manual", "guardrails": ["Anti-Halusinasi", "Evidence Chain", "Abstract-Only"]}
     }
 
-# ================= SIDEBAR: NAVIGASI & KONTROL =================
+# ================= EXPORT ENGINE (SAFE) =================
+def generate_academic_docx(target: str, title: str, content: str, refs: list) -> BytesIO:
+    if "docx" not in globals():
+        raise ImportError("python-docx tidak terinstall. Export dinonaktifkan.")
+    doc = docx.Document()
+    doc.styles['Normal'].font.name = 'Times New Roman'
+    doc.styles['Normal'].font.size = Pt(12)
+    
+    doc.add_heading(title, level=1)
+    doc.add_paragraph(f"Target: {target} | Bidang: {st.session_state.config['domain']} | Tanggal: {datetime.date.today()}").italic = True
+    doc.add_page_break()
+    
+    doc.add_heading("Isi Dokumen", level=2)
+    doc.add_paragraph(content if content else "Konten akan dilengkapi setelah validasi manual.")
+    
+    doc.add_heading("Evidence Chain & Disclaimer", level=2)
+    doc.add_paragraph("Catatan: Seluruh klaim bersumber dari metadata abstrak intake. Verifikasi manual wajib dilakukan sebelum submit/ajuan.")
+    for r in refs[-10:]:
+        doc.add_paragraph(f"[{r.get('ref','')}] → {r.get('module','')} | {r.get('timestamp','')[:10]}", style='List Bullet')
+        
+    buf = BytesIO(); doc.save(buf); buf.seek(0); return buf
+
+# ================= SIDEBAR =================
 with st.sidebar:
     st.header("📘 ALAS v3.0")
-    st.caption("Academic Literature Analysis System • Core v2.2 Compatible")
-    
-    # Toggle Mode Pemrosesan
-    st.subheader("⚙️ Mode Inferensi")
-    st.session_state.process_mode = st.radio(
-        "Pilih mode:",
-        ["👐 Manual (Eksternal AI)", "🤖 Otomatis (API)"],
-        index=0,
-        help="Manual: paste prompt ke AI eksternal. Otomatis: butuh API key (belum diimplementasi)."
-    )
-    
+    st.session_state.process_mode = st.radio("Mode Inferensi", ["🤖 Qwen AI (Semi-Otomatis)", "👐 Manual (Eksternal AI)"], index=0)
+    if st.session_state.process_mode == "🤖 Qwen AI":
+        st.success("✅ Terhubung Qwen API") if get_qwen_client() else st.error("❌ QWEN_API_KEY tidak ditemukan di secrets")
     st.divider()
-    st.subheader("🔧 Core Layer Config")
     
-    # Terminology preference (sesuai memori user)
-    with st.expander("📝 Preferensi Terminologi", expanded=False):
-        st.session_state.config["terminology"]["instansi"] = st.checkbox(
-            "Gunakan 'instansi' (bukan 'perusahaan')", 
-            value=st.session_state.config["terminology"].get("instansi", True)
-        )
-        st.session_state.config["terminology"]["pegawai"] = st.checkbox(
-            "Gunakan 'pegawai' (bukan 'karyawan')", 
-            value=st.session_state.config["terminology"].get("pegawai", True)
-        )
-    
-    st.session_state.config["domain"] = st.selectbox(
-        "Bidang Penelitian", 
-        ["Data Mining", "Sentiment Analysis", "Policy Analysis", "Kepegawaian", "Umum"], 
-        index=3 if st.session_state.config["domain"] == "Kepegawaian" else 0
-    )
-    st.session_state.config["level"] = st.selectbox(
-        "Level Akademik", 
-        ["Skripsi", "Tesis", "Disertasi", "Hibah"], 
-        index=0
-    )
-    st.session_state.config["target"] = st.selectbox(
-        "Target Publikasi", 
-        ["SINTA 2", "Scopus Q1"], 
-        index=0
-    )
-    
+    st.subheader("🔧 Konfigurasi")
+    with st.expander("📝 Terminologi"):
+        st.session_state.config["terminology"]["instansi"] = st.checkbox("Gunakan 'instansi'", value=st.session_state.config["terminology"]["instansi"])
+        st.session_state.config["terminology"]["pegawai"] = st.checkbox("Gunakan 'pegawai'", value=st.session_state.config["terminology"]["pegawai"])
+    st.session_state.config["domain"] = st.selectbox("Bidang", RESEARCH_DOMAINS, index=RESEARCH_DOMAINS.index(st.session_state.config["domain"]) if st.session_state.config["domain"] in RESEARCH_DOMAINS else 0)
+    st.session_state.config["level"] = st.selectbox("Level", ["Skripsi", "Tesis", "Disertasi", "Hibah"], index=0)
+    st.session_state.config["target"] = st.selectbox("Target Publikasi", PUBLICATION_TARGETS, index=PUBLICATION_TARGETS.index(st.session_state.config["target"]) if st.session_state.config["target"] in PUBLICATION_TARGETS else 0)
     st.divider()
-    st.subheader("📊 Progress Modul")
-    done_count = sum(1 for m in st.session_state.modules.values() if m["status"] == "done")
-    progress = done_count / len(MODULES)
-    st.progress(progress)
-    st.caption(f"{done_count}/{len(MODULES)} modul selesai")
     
-    # Module selector with status badges
-    st.session_state.current = st.radio(
-        "Pilih Modul", 
-        MODULES,
-        format_func=lambda x: f"{x} • {MODULE_SPECS[x]['name'] if x in MODULE_SPECS else ''} • {'✅' if st.session_state.modules[x]['status']=='done' else '🔒' if st.session_state.modules[x]['status']=='locked' else '⏳'}"
-    )
-    
+    done = sum(1 for m in st.session_state.modules.values() if m["status"]=="done")
+    st.progress(done/len(MODULES)); st.caption(f"{done}/{len(MODULES)} selesai")
+    st.session_state.current = st.radio("Pilih Modul", MODULES, 
+        format_func=lambda x: f"{x} • {'✅' if st.session_state.modules[x]['status']=='done' else '🔒' if st.session_state.modules[x]['status']=='locked' else '⏳'}")
     st.divider()
-    col_b1, col_b2 = st.columns(2)
-    with col_b1:
-        if st.button("💾 Backup"):
-            backup_data = {
-                "config": st.session_state.config,
-                "modules": {k: {kk: vv for kk, vv in v.items() if kk not in ['output', 'evidence_log']} for k, v in st.session_state.modules.items()},
-                "anchor": st.session_state.anchor,
-                "evidence_chain": st.session_state.evidence_chain[-20:],  # Last 20 refs
-                "timestamp": datetime.datetime.now().isoformat()
-            }
-            st.download_button(
-                "Download JSON", 
-                json.dumps(backup_data, indent=2, ensure_ascii=False), 
-                file_name=f"ALAS_backup_{datetime.date.today()}.json",
-                mime="application/json"
-            )
-    with col_b2:
-        if st.button("🗑️ Reset", type="primary"):
-            for m in MODULES: 
-                st.session_state.modules[m] = {"status": "locked", "data": None, "output": None, "evidence_log": []}
-            st.session_state.modules["M0"]["status"] = "pending"
-            st.session_state.modules["CL"]["status"] = "done"
-            st.session_state.current = "M0"
-            st.session_state.anchor = {"topic": "", "novelty": [], "method": "", "target": "", "locked_after_M6": False}
-            st.session_state.evidence_chain = []
-            st.rerun()
-
-# ================= RENDER MODUL =================
-def render_m0():
-    st.header("📥 M0: Literature Search")
-    st.info("📌 **Abstract-Only Mode**: Masukkan metadata jurnal primer. Sistem menolak otomatis konferensi/SLR/PDF.")
     
-    with st.form("m0_form"):
-        kw = st.text_input("Keyword Target (Bahasa Inggris)", placeholder="Contoh: sentiment analysis e-commerce")
-        st.markdown("### Input Metadata Paper (Paste 1 blok per paper)")
-        paper_text = st.text_area(
-            "Format per paper:\n```\nTITLE: [judul lengkap]\nAUTHORS: [nama]\nYEAR: [tahun]\nJOURNAL: [nama jurnal]\nKEYWORDS: [kw1; kw2]\nABSTRACT: [teks abstrak]\nDOI: [10.xxxx/...]\nSOURCE: [Scopus/IEEE]\n```", 
-            height=300,
-            placeholder="Paste metadata 10 paper di sini..."
-        )
-        
-        col1, col2 = st.columns([1, 2])
-        with col1:
-            valid = st.form_submit_button("✅ Validasi & Proses", type="primary")
-        with col2:
-            st.markdown("🔍 **Auto-Filter Aktif (Dashboard v2.2)**:\n- ✅ `journal-article` only\n- ✅ 4 tahun terakhir\n- ✅ ≥50% dari 1–2 tahun terkini\n- ❌ Exclude: conference/proceedings/SLR/meta-analysis")
-            
-    if valid:
-        if not kw or not paper_text:
-            st.error("❌ Keyword dan metadata paper wajib diisi.")
-            return
-            
-        # Simpan & Proses
-        st.session_state.modules["M0"]["data"] = {"keyword": kw, "raw": paper_text}
-        
-        if st.session_state.process_mode == "👐 Manual (Eksternal AI)":
-            with st.spinner("⏳ Menyiapkan prompt Core Layer v3.0 + validasi M0..."):
-                st.session_state.modules["M0"]["output"] = run_ai_processing("M0", {"keyword": kw, "raw": paper_text})
-                save_state()
-                st.success("✅ Prompt siap + validasi M0 selesai! Buka tab 📖 Detail untuk menyalin.")
-        else:
-            st.warning("⚠️ Mode otomatis belum diimplementasi. Menggunakan fallback manual mode.")
-            st.session_state.modules["M0"]["output"] = run_ai_processing("M0", {"keyword": kw, "raw": paper_text})
-            save_state()
-            
+    if st.button("💾 Backup State"):
+        st.download_button("Download JSON", json.dumps(st.session_state.to_dict(), indent=2), f"ALAS_backup_{datetime.date.today()}.json")
+    if st.button("🗑️ Reset", type="primary"):
+        for m in MODULES: st.session_state.modules[m] = {"status": "locked", "data": {}, "output": None}
+        st.session_state.modules["M0"]["status"] = "pending"; st.session_state.modules["CL"]["status"] = "done"
+        st.session_state.current = "M0"; st.session_state.anchor = {"topic": "", "locked_after_M6": False}
+        st.session_state.evidence_chain = []
         st.rerun()
 
-def render_output_layer(module_id: str):
-    """Render output 3-tier dengan dukungan manual mode + evidence chain tracking"""
-    out = st.session_state.modules[module_id]["output"]
-    if not out:
-        st.warning("⏳ Belum diproses. Klik tombol 🚀 Proses terlebih dahulu.")
-        return
-        
-    t1, t2, t3 = st.tabs(["📋 Ringkasan", "📖 Detail Akademik", "📦 Metadata"])
-    
-    with t1:
-        st.markdown(out["layer1_summary"])
-        st.caption("💡 Gunakan ringkasan untuk executive summary atau abstrak cepat.")
-        
-        # Evidence quick stats
-        if module_id in ["M2", "M4", "M6"]:
-            st.markdown("#### 📊 Evidence Snapshot")
-            refs = [r for r in st.session_state.evidence_chain if r.get("module") == module_id]
-            st.metric("Klaim tereferensi", f"{len(refs)}", delta=None)
-        
+# ================= RENDER FUNCTIONS =================
+def render_output_layer(mod_id):
+    out = st.session_state.modules[mod_id].get("output")
+    if not out: st.warning("⏳ Belum diproses."); return
+    t1, t2, t3 = st.tabs(["📋 Ringkasan", "📖 Detail", "📦 Metadata/Export"])
+    with t1: st.markdown(out.get("layer1_summary", ""))
     with t2:
-        if out.get("status") == "manual_mode":
-            # 🔥 TAMPILKAN PROMPT YANG BISA DISALIN 🔥
-            st.info("📋 **Langkah Manual Mode**:\n1. Salin prompt di bawah\n2. Paste ke ChatGPT/Claude/Gemini/Qwen\n3. Salin hasilnya\n4. Paste ke field di bagian bawah\n5. Klik 💾 Simpan")
-            
-            st.markdown("### Prompt Core Layer v3.0 (Siap Salin)")
-            st.code(out["layer2_academic"], language="text")
-            
-            st.markdown("### ↓ Paste Hasil dari AI Eksternal")
-            user_result = st.text_area(
-                "Hasil pemrosesan AI", 
-                value=st.session_state.modules[module_id].get("user_output", ""),
-                key=f"manual_input_{module_id}",
-                height=500 if module_id in ["M6", "M7", "M8"] else 400,
-                placeholder="Paste hasil lengkap dari AI eksternal di sini..."
-            )
-            
-            col_s1, col_s2 = st.columns([1, 3])
-            with col_s1:
-                if st.button("💾 Simpan Hasil", type="primary", key=f"save_manual_{module_id}"):
-                    if user_result.strip():
-                        # Update output dengan hasil user
-                        st.session_state.modules[module_id]["output"]["layer2_academic"] = user_result
-                        st.session_state.modules[module_id]["output"]["user_verified"] = True
-                        st.session_state.modules[module_id]["user_output"] = user_result
-                        
-                        # Extract & log evidence references (simple regex)
-                        refs = re.findall(r'\[Ref:\s*([^\]]+)\]', user_result)
-                        for ref in refs:
-                            st.session_state.evidence_chain.append({
-                                "module": module_id,
-                                "ref": ref,
-                                "timestamp": datetime.datetime.now().isoformat()
-                            })
-                        
-                        save_state()
-                        st.success("✅ Hasil tersimpan! Modul siap dilanjutkan.")
-                        st.rerun()
-                    else:
-                        st.warning("⚠️ Hasil tidak boleh kosong.")
-            with col_s2:
-                if st.button("🗑️ Kosongkan", key=f"clear_manual_{module_id}"):
-                    st.session_state.modules[module_id]["user_output"] = ""
-                    st.rerun()
-                    
-            # Tampilkan guardrail checklist + evidence tracking
-            with st.expander("🛡️ Checklist Guardrail & Evidence (Opsional)"):
-                st.checkbox("✅ Setiap klaim merujuk ke metadata intake [Ref: ID_Paper]", key=f"gr1_{module_id}")
-                st.checkbox("✅ Tidak ada halusinasi sitasi/DOI/metode", key=f"gr2_{module_id}")
-                st.checkbox("✅ Output sesuai spesifikasi modul (kata, struktur, bahasa)", key=f"gr3_{module_id}")
-                if st.session_state.config["terminology"]["instansi"]:
-                    st.checkbox("✅ Konsisten: 'instansi' & 'pegawai' digunakan", key=f"gr4_{module_id}")
-                
-                # Evidence log preview
-                refs = [r for r in st.session_state.evidence_chain if r.get("module") == module_id]
-                if refs:
-                    st.markdown(f"#### 📎 Evidence References ({len(refs)})")
-                    for r in refs[-5:]:  # Last 5
-                        st.caption(f"`[Ref: {r['ref']}]`")
-                
+        if out.get("status") == "ai_success":
+            st.markdown('<div class="status-ai">🤖 Hasil Qwen AI — review & edit sebelum simpan</div>', unsafe_allow_html=True)
+            txt = st.text_area("Edit Hasil", value=out.get("layer2_academic",""), height=500 if mod_id in ["M6","M7","M8"] else 400, key=f"edit_{mod_id}")
+            if st.button("💾 Simpan & Validasi", type="primary"):
+                if txt.strip():
+                    st.session_state.modules[mod_id]["output"]["layer2_academic"] = txt
+                    st.session_state.modules[mod_id]["output"]["user_verified"] = True
+                    refs = re.findall(r'\[Ref:\s*([^\]]+)\]', txt)
+                    for r in refs: st.session_state.evidence_chain.append({"module": mod_id, "ref": r, "timestamp": datetime.datetime.now().isoformat()})
+                    save_state(); st.success("✅ Tersimpan."); st.rerun()
+                else: st.warning("⚠️ Hasil tidak boleh kosong.")
+            if st.button("🔄 Regenerasi"): st.session_state.modules[mod_id]["output"] = None; st.rerun()
         else:
-            # Mode otomatis (placeholder)
-            st.markdown(f"<div class='academic-text'>{out.get('layer2_academic', '')}</div>", unsafe_allow_html=True)
-            if st.button("📋 Salin ke Clipboard"):
-                st.toast("Tersalin! (Fitur clipboard memerlukan interaksi browser)")
-            
+            st.markdown('<div class="status-manual">👐 Mode Manual: Salin prompt → AI → Paste hasil → Simpan</div>', unsafe_allow_html=True)
+            st.code(out.get("layer2_academic", ""), language="text")
+            txt = st.text_area("Paste Hasil AI", value="", height=500, key=f"manual_{mod_id}")
+            if st.button("💾 Simpan", type="primary"):
+                if txt.strip():
+                    st.session_state.modules[mod_id]["output"]["layer2_academic"] = txt
+                    st.session_state.modules[mod_id]["output"]["user_verified"] = True
+                    for r in re.findall(r'\[Ref:\s*([^\]]+)\]', txt): st.session_state.evidence_chain.append({"module": mod_id, "ref": r, "timestamp": datetime.datetime.now().isoformat()})
+                    save_state(); st.success("✅ Tersimpan."); st.rerun()
     with t3:
-        st.json(out["layer3_metadata"])
-        st.caption("📤 Format siap export ke .docx, .tex, atau .json")
-        
-        # Evidence summary & guardrail status
-        if out.get("layer3_metadata", {}).get("guardrails"):
-            st.markdown("#### Guardrail Status")
-            for g in out["layer3_metadata"]["guardrails"]:
-                st.markdown(f"✅ {g}")
-        
-        # Validation summary for M0
-        if module_id == "M0" and out["layer3_metadata"].get("validation_summary"):
-            st.markdown("#### 📊 Validasi M0 Summary")
-            st.info(out["layer3_metadata"]["validation_summary"])
+        st.json(out.get("layer3_metadata", {}))
+        if "docx" in globals() and mod_id in ["M7","M8"] and st.session_state.modules[mod_id].get("output", {}).get("user_verified"):
+            st.markdown("### 📥 Export .docx (Rekomendasi High-Impact)")
+            top3 = ["Proposal Penelitian", "Scopus Q2", "SINTA 2"]  # Simple rule-based top3
+            cols = st.columns(3)
+            for i, t in enumerate(top3):
+                with cols[i]:
+                    st.info(f"🎯 {t}")
+                    if st.button(f"📄 Download {t}"):
+                        try:
+                            buf = generate_academic_docx(t, st.session_state.anchor.get("topic","Penelitian"), out.get("layer2_academic","")[:2000], st.session_state.evidence_chain)
+                            st.download_button(f"✅ {t}.docx", buf, f"ALAS_{t.replace(' ','_')}_{datetime.date.today()}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                        except ImportError: st.error("python-docx belum terinstall.")
 
-def render_generic_module(mod_id: str):
+def render_generic(mod_id):
     st.header(f"⚙️ {mod_id}: {MODULE_SPECS[mod_id]['name']}")
     st.caption(MODULE_SPECS[mod_id]['desc'])
-    
     if st.session_state.modules[mod_id]["status"] == "locked":
-        st.error("🔒 Modul terkunci. Selesaikan modul sebelumnya terlebih dahulu.")
-        prev_idx = MODULES.index(mod_id) - 1
-        if prev_idx >= 0:
-            st.info(f"💡 Lanjutkan dari modul: **{MODULES[prev_idx]}** ({MODULE_SPECS[MODULES[prev_idx]]['name']})")
-        return
-        
-    st.markdown('<div class="guardrail-box">🛡️ <strong>Guardrail Aktif:</strong> Anti-Halusinasi • Evidence Chain • Abstract-Only • Iteratif Protocol • Terminology Consistency</div>', unsafe_allow_html=True)
-    
-    # Tampilkan data input jika ada
-    if st.session_state.modules[mod_id]["data"]:
-        with st.expander("📥 Lihat Input Data"):
-            data = st.session_state.modules[mod_id]["data"]
-            if isinstance(data, dict) and "validated_papers" in data:
-                # Show validated papers summary for M0
-                papers = data["validated_papers"]
-                st.write(f"**{len(papers)} paper tervalidasi**")
-                for p in papers[:3]:  # Preview first 3
-                    st.markdown(f"- `{p['_id']}`: {p.get('TITLE', '')[:80]}...")
-            else:
-                st.json(data)
-    
-    # Tombol proses
+        st.error("🔒 Selesaikan modul sebelumnya."); return
+    st.markdown('<div class="guardrail-box">🛡️ Guardrail: Abstract-Only • Anti-Halusinasi • Evidence Chain</div>', unsafe_allow_html=True)
     if not st.session_state.modules[mod_id].get("output"):
         if st.button(f"🚀 Proses {mod_id}", type="primary"):
-            if st.session_state.process_mode == "👐 Manual (Eksternal AI)":
-                with st.spinner(f"⏳ Menyiapkan prompt Core Layer v3.0 untuk {mod_id}..."):
-                    input_data = st.session_state.modules[mod_id]["data"] or {}
-                    # Add anchor context for modules after M6
-                    if mod_id in ["M7", "M8", "M9"] and st.session_state.anchor["locked_after_M6"]:
-                        input_data["_anchor"] = st.session_state.anchor
-                    st.session_state.modules[mod_id]["output"] = run_ai_processing(mod_id, input_data)
-                    save_state()
-                    st.success(f"✅ Prompt {mod_id} siap! Buka tab 📖 Detail untuk menyalin.")
-            else:
-                st.warning("⚠️ Mode otomatis belum diimplementasi. Menggunakan fallback manual mode.")
-                st.session_state.modules[mod_id]["output"] = run_ai_processing(mod_id, st.session_state.modules[mod_id]["data"] or {})
-                save_state()
-            st.rerun()
+            inp = st.session_state.modules[mod_id].get("data", {})
+            if mod_id in ["M7","M8","M9"] and st.session_state.anchor.get("locked_after_M6"): inp["_anchor"] = st.session_state.anchor
+            st.session_state.modules[mod_id]["output"] = run_ai_processing(mod_id, inp)
+            save_state(); st.success("✅ Siap review."); st.rerun()
     else:
-        st.success(f"✅ {mod_id} telah diproses. Review output di tab berikut.")
-            
+        st.success(f"✅ {mod_id} selesai ({st.session_state.modules[mod_id]['output'].get('mode','manual')})")
     render_output_layer(mod_id)
 
+def render_m0():
+    st.header("📥 M0: Literature Search")
+    with st.form("m0"):
+        kw = st.text_input("Keyword", placeholder="Contoh: sentiment analysis")
+        txt = st.text_area("Metadata Paper (format: TITLE: ...)", height=250)
+        if st.form_submit_button("✅ Validasi & Proses", type="primary"):
+            if not kw or not txt: st.error("❌ Wajib diisi."); return
+            st.session_state.modules["M0"]["data"] = {"keyword": kw, "raw": txt}
+            st.session_state.modules["M0"]["output"] = run_ai_processing("M0", st.session_state.modules["M0"]["data"])
+            save_state(); st.success("✅ Prompt/Validasi siap."); st.rerun()
+    if st.session_state.modules["M0"].get("output"): render_output_layer("M0")
+
 # ================= MAIN ROUTER =================
+init_state()
 mod = st.session_state.current
 if mod == "CL":
-    st.header("🔷 Core Layer — Fondasi Sistem")
-    st.markdown("""
-    ### Core Layer v3.0 — Active ✅
-    
-    **Mode**: Abstract-Based Input Mode  
-    **Guardrails**: Anti-Halusinasi • Evidence Chain • Terminology Consistency • Iteratif Protocol  
-    **Input Schema**: TITLE • AUTHORS • YEAR • JOURNAL • KEYWORDS • ABSTRACT • DOI • SOURCE  
-    
-    ### Status Modul
-    """)
+    st.header("🔷 Core Layer — Aktif ✅")
     for m in MODULES:
-        status = st.session_state.modules[m]["status"]
-        icon = "✅" if status == "done" else "🔒" if status == "locked" else "⏳"
-        st.markdown(f"- {icon} **{m}**: {MODULE_SPECS[m]['name']}")
-        
-elif mod == "M0":
-    render_m0()
-elif mod in ["M6", "M7", "M8", "M9"]:
-    render_generic_module(mod)
-else:
-    # M1-M5: framework siap dikembangkan dengan spesifikasi dashboard
-    st.info(f"🚧 Modul {mod} ({MODULE_SPECS[mod]['name']}) dalam pengembangan. Gunakan M0, M6-M9 untuk alur penelitian lengkap.")
-    render_generic_module(mod)
+        st.markdown(f"- {'✅' if st.session_state.modules[m]['status']=='done' else '🔒' if st.session_state.modules[m]['status']=='locked' else '⏳'} **{m}**: {MODULE_SPECS[m]['name']}")
+elif mod == "M0": render_m0()
+elif mod in ["M1","M2","M3","M4","M5"]:
+    st.info(f"🚧 {mod} dalam pengembangan framework. Gunakan M0, M6-M9 untuk alur lengkap."); render_generic(mod)
+elif mod == "M6":
+    st.header("🎯 M6: 10 Rekomendasi Judul"); st.caption("2500 kata/judul • Latar belakang • Urgensi • GAP • 2 novelty • Flowchart")
+    if st.session_state.modules["M5"]["status"] != "done": st.error("🔒 M5 wajib selesai."); st.stop()
+    with st.form("m6cfg"):
+        st.session_state.m6_batch["size"] = st.slider("Judul per batch", 1, 3, 1)
+        st.form_submit_button("🚀 Generate", type="primary")
+        inp = {"m5_audit": st.session_state.modules["M5"].get("data",{}), "batch": st.session_state.m6_batch}
+        st.session_state.modules["M6"]["output"] = run_ai_processing("M6", inp)
+        save_state(); st.success("✅ Siap review."); st.rerun()
+    if st.session_state.modules["M6"].get("output"): render_output_layer("M6")
+elif mod in ["M7","M8","M9"]: render_generic(mod)
 
-# ================= FOOTER INTEGRITY =================
 st.divider()
-st.caption("📘 ALAS v3.0 • Abstract-Based Input Mode • Dashboard v2.2 Compatible • No Fake Data • Evidence Chain Active • Terminology: instansi/pegawai")
+st.caption(f"📘 ALAS v3.0 • Abstract-Only • Dashboard v2.2 • Qwen Semi-Auto • Export Ready • Bidang: {st.session_state.config['domain']}")
